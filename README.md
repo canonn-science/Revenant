@@ -7,7 +7,7 @@ Python scripts to take data from CAPI and load them into google sheets.
 
 [Canonn - Lagrange Clouds](https://docs.google.com/spreadsheets/d/11BCZRci0YlgW0sFdxvB_srq7ssxHzstMAiewhSGHE94) -- Lagrange Clouds and their content
 
-# Not currently fit for use. You will need a google service account clinet secrets and your own spreadheets to run these yourself 
+# Not currently fit for use. You will need a google service account client secrets and your own spreadheets to run these yourself 
 
 # TODO
 
