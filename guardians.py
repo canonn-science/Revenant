@@ -85,6 +85,7 @@ def get_grsites():
         "Region",
         "Primary Star",
         "Body Name",
+        "POI Id",
         "Body Sub Type",
         "Gravity",
         "Distance To Arrival",
@@ -113,6 +114,7 @@ def get_grsites():
        cols.append(region)
        cols.append(row.get("system").get("primaryStar").get("type"))
        cols.append(str(row.get("body").get("bodyName").replace(row.get("system").get("systemName"),'')))
+       cols.append(row.get("frontierId"))
        cols.append(row.get("body").get("subType"))
        cols.append(row.get("body").get("gravity"))
        cols.append(row.get("body").get("distanceToArrival"))
@@ -337,12 +339,14 @@ def write_sheet(spreadsheet_id,range_name,cells):
         print(e)
 
 
+GUARDIAN_SHEET='1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y'
+
 cells=[]
 cells.append([str(datetime.now().isoformat(timespec='minutes'))])
-write_sheet('1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y','Beacon Reports!A1:Z',get_gbreports())
-write_sheet('1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y','Guardian Beacons!A1:Z',get_gbsites())
-write_sheet('1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y','Guardian Ruins!A1:Z',get_grsites())
-write_sheet('1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y','Guardian Structures!A1:Z',get_gssites())
-write_sheet('1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y','Ruin Reports!A1:Z',get_grreports())
-write_sheet('1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y','Structure Reports!A1:Z',get_gsreports())
-write_sheet('1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y','Header!B3',cells)
+write_sheet(GUARDIAN_SHEET,'Beacon Reports!A1:Z',get_gbreports())
+write_sheet(GUARDIAN_SHEET,'Guardian Beacons!A1:Z',get_gbsites())
+write_sheet(GUARDIAN_SHEET,'Guardian Ruins!A1:Z',get_grsites())
+write_sheet(GUARDIAN_SHEET,'Guardian Structures!A1:Z',get_gssites())
+write_sheet(GUARDIAN_SHEET,'Ruin Reports!A1:Z',get_grreports())
+write_sheet(GUARDIAN_SHEET,'Structure Reports!A1:Z',get_gsreports())
+write_sheet(GUARDIAN_SHEET,'Header!B3',cells)
