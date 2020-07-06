@@ -4,10 +4,9 @@ import httplib2
 import os
 import requests
 import json
-from googleapiclient import discovery
-from google.oauth2 import service_account
 from pathlib import Path
 from datetime import datetime
+from revenant import write_sheet
 
 HOME = str(Path.home())
 
@@ -170,6 +169,7 @@ def get_grreports():
     retval.append([
         "Report Id",
         "Created",
+        "Region",
         "System Name",
         "Body Name",
         "Type",
@@ -185,6 +185,12 @@ def get_grreports():
        cols=[]
        cols.append(row.get("id"))
        cols.append(row.get("created_at"))
+       region_id=row.get("regionID")
+       if region_id is not None:
+           region=REGIONS[region_id-1].get("name")
+       else:
+           region="Unknown"
+       cols.append(region)
        cols.append(row.get("systemName"))
        cols.append(row.get("bodyName").replace(row.get("systemName"),''))
        cols.append(row.get("type"))
@@ -192,7 +198,12 @@ def get_grreports():
        cols.append(row.get("latitude"))
        cols.append(row.get("longitude"))
        cols.append(row.get("cmdrName"))
-       cols.append(row.get("reportComment"))
+       if not row.get("cmdrComment"):
+           comment=row.get("reportComment")
+       else:
+           comment=row.get("cmdrComment")
+
+       cols.append(comment)
 
        retval.append(cols)
        #print(json.dumps(col,indent=4))
@@ -226,7 +237,10 @@ def get_gsreports():
        cols.append(row.get("latitude"))
        cols.append(row.get("longitude"))
        cols.append(row.get("cmdrName"))
-       cols.append(row.get("reportComment"))
+       if not row.get("cmdrComment"):
+           comment=row.get("reportComment")
+       else:
+           comment=row.get("cmdrComment")
 
        retval.append(cols)
        #print(json.dumps(col,indent=4))
@@ -236,7 +250,9 @@ def get_gbreports():
     retval=[]
     retval.append([
         "Created",
+        "Region",
         "System Name",
+        "Body Name",
         "Discovered By",
         "Comment"
     ])
@@ -245,8 +261,16 @@ def get_gbreports():
        #print(row)
        cols=[]
        cols.append(row.get("created_at"))
+       region_id=row.get("regionID")
+       if region_id is not None:
+           region=REGIONS[region_id-1].get("name")
+       else:
+           region="Unknown"
+       cols.append(region)
        cols.append(row.get("systemName"))
+       cols.append(row.get("bodyName"))
        cols.append(row.get("cmdrName"))
+       cols.append(row.get("reportComment"))
        cols.append(row.get("reportComment"))
 
        retval.append(cols)
@@ -309,35 +333,6 @@ def get_gssites():
        retval.append(cols)
        #print(json.dumps(col,indent=4))
     return retval
-
-     
-
-     
-
-def write_sheet(spreadsheet_id,range_name,cells):
-    name,dummy=range_name.split('!')
-    print(f"Writing to sheet {name}")
-    try:
-        scopes = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/spreadsheets"]
-        secret_file = os.path.join(HOME,'sheets', 'client_secret.json')
-
-
-        credentials = service_account.Credentials.from_service_account_file(secret_file, scopes=scopes)
-        service = discovery.build('sheets', 'v4', credentials=credentials)
-    
-
-        values=cells
-
-
-        data = {
-            'values' : values 
-        }
-
-        service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, body=data, range=range_name, valueInputOption='USER_ENTERED').execute()
-
-    except OSError as e:
-        print(e)
-
 
 GUARDIAN_SHEET='1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y'
 
