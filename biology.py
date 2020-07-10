@@ -332,6 +332,15 @@ def get_signal_cells():
 
     return signalcells
 
+def enrich(cells,name):
+    r=[]
+    retval=[]
+    for row in cells:
+        if row[0] != "SiteId":
+            r=row
+            r.insert(0,name)
+            retval.append(row)
+    return retval
 
 
 SHEETID="15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
@@ -339,16 +348,31 @@ GUARDIAN_SHEET="1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y"
 CLOUD_SHEET="11BCZRci0YlgW0sFdxvB_srq7ssxHzstMAiewhSGHE94"
 
 cells=[]
+consolidated=[]
 cells.append([str(datetime.now().isoformat(timespec='minutes'))])
-write_sheet(SHEETID,'Amphora Plant Sites!A1:Z',get_sites("apsites"))
+apcells=get_sites("apsites")
+write_sheet(SHEETID,'Amphora Plant Sites!A1:Z',apcells)
+consolidated.extend(enrich(apcells,"Amphora Plants"))
 
+apcells=get_sites("bmsites")
+write_sheet(SHEETID,'Bark Mound Sites!A1:Z',apcells)
+consolidated.extend(enrich(apcells,"Bark Mounds"))
 
-write_sheet(SHEETID,'Anemone Sites!A1:Z',get_sites("fgsites"))
-write_sheet(SHEETID,'Crystaline Shard Sites!A1:Z',get_sites("cssites"))
-write_sheet(SHEETID,'Sinuous Tuber Sites!A1:Z',get_sites("twsites"))
+fgcells=get_sites("fgsites")
+write_sheet(SHEETID,'Anemone Sites!A1:Z',fgcells)
+consolidated.extend(enrich(fgcells,"Amenomes"))
+cscells=get_sites("cssites")
+write_sheet(SHEETID,'Crystaline Shard Sites!A1:Z',cscells)
+consolidated.extend(enrich(cscells,"Crystaline Shards"))
+twcells=get_sites("twsites")
+write_sheet(SHEETID,'Sinuous Tuber Sites!A1:Z',twcells)
+consolidated.extend(enrich(twcells,"Sinuous Tubers"))
 btcells=get_sites("btsites")
 write_sheet(SHEETID,'Brain Tree Sites!A1:Z',btcells)
+consolidated.extend(enrich(btcells,"Brain Trees"))
 write_sheet(GUARDIAN_SHEET,'Brain Tree Sites!A1:Z',btcells)
+write_sheet(SHEETID,'Consolidated!A2:Z',consolidated)
+
 
 
 write_sheet(CLOUD_SHEET,'Lagrange Cloud Reports!A1:Z',get_lc())
