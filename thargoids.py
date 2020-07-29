@@ -59,7 +59,6 @@ def get_hd_monitor():
 
 
 def get_hd_detected():
-    system = "Merope"
 
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
     sql = """
@@ -69,6 +68,15 @@ def get_hd_detected():
 
     return cursor.fetchall()
 
+def get_surface_encounters():
+
+    cursor = mysql_conn.cursor()
+    sql = """
+    select * from v_surface_encounters;
+       """
+    cursor.execute(sql, ())
+
+    return cursor.fetchall()
 
 hd_data = {}
 
@@ -159,4 +167,5 @@ hd_detected = get_hd_detected()
 hdcells=merge_hd_data(hd_monitor,hd_detected)
 
 write_sheet(THARGOID_SHEET, 'Hyperdictions!A2:Z', sorted(hdcells))
+write_sheet(THARGOID_SHEET, 'Surface Encounters!A2:Z', get_surface_encounters())
 update_header()
