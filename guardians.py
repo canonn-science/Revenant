@@ -7,6 +7,9 @@ import json
 from pathlib import Path
 from datetime import datetime
 from revenant import write_sheet
+import sys
+sys.path.append('EliteDangerousRegionMap')
+from RegionMap import findRegion
 
 HOME = str(Path.home())
 
@@ -51,7 +54,7 @@ def fetch_beacons():
     retval=[]
     page=0
     while True:
-        data="query{ gbsites (start: " + str(page) + " limit: 100){ system { systemName primaryStar edsmCoordX edsmCoordY edsmCoordZ} body { bodyName subType distanceToArrival } siteID gssite { system { systemName } body { bodyName subType } siteID latitude longitude discoveredBy { cmdrName } } gbmessage { messageSystem { systemName } messageBody { bodyName } } discoveredBy { cmdrName } } } "
+        data="query{ gbsites (start: " + str(page) + " limit: 100){ system { systemName primaryStar edsmCoordX edsmCoordY edsmCoordZ id64   } body { bodyName subType distanceToArrival } siteID gssite { system { systemName } body { bodyName subType } siteID latitude longitude discoveredBy { cmdrName } } gbmessage { messageSystem { systemName } messageBody { bodyName } } discoveredBy { cmdrName } } } "
 
         r=requests.post(GRAPHQL,json={'query': data}) 
         page+=100
@@ -81,7 +84,8 @@ def get_grsites():
         "Site Type",
         "System Name",
         "x","y","z",
-        "Region",
+        "Region (Calculated)",
+        "Region (Journal)",
         "Primary Star",
         "Body Name",
         "POI Id",
@@ -105,6 +109,14 @@ def get_grsites():
        cols.append(row.get("system").get("edsmCoordX"))
        cols.append(row.get("system").get("edsmCoordY"))
        cols.append(row.get("system").get("edsmCoordZ"))
+       id64 = int(row.get("system").get("id64"))
+       masscode = id64 & 7
+       z = (((id64 >> 3) & (0x3FFF >> masscode)) << masscode) * 10 - 24105
+       y = (((id64 >> (17 - masscode)) & (0x1FFF >> masscode)) << masscode) * 10 - 40985
+       x = (((id64 >> (30 - masscode * 2)) & (0x3FFF >> masscode)) << masscode) * 10 - 49985
+       rid, region = findRegion(x, y, z)
+       cols.append(str(region))
+
        region_id=row.get("system").get("region")
        if region_id:
            region=REGIONS[region_id-1].get("name")
@@ -134,6 +146,7 @@ def get_gbsites():
         "SiteId",
         "System Name",
         "x","y","z",
+        "Region",
         "Primary Star",
         "Body Name",
         "Body Sub Type",
@@ -151,6 +164,15 @@ def get_gbsites():
        cols.append(row.get("system").get("edsmCoordX"))
        cols.append(row.get("system").get("edsmCoordY"))
        cols.append(row.get("system").get("edsmCoordZ"))
+
+       id64 = int(row.get("system").get("id64"))
+       masscode = id64 & 7
+       z = (((id64 >> 3) & (0x3FFF >> masscode)) << masscode) * 10 - 24105
+       y = (((id64 >> (17 - masscode)) & (0x1FFF >> masscode)) << masscode) * 10 - 40985
+       x = (((id64 >> (30 - masscode * 2)) & (0x3FFF >> masscode)) << masscode) * 10 - 49985
+       rid, region = findRegion(x, y, z)
+       cols.append(str(region))
+
        cols.append(row.get("system").get("primaryStar").get("type"))
        cols.append(row.get("body").get("bodyName").replace(row.get("system").get("systemName"),''))
        cols.append(row.get("body").get("subType"))
@@ -169,7 +191,7 @@ def get_grreports():
     retval.append([
         "Report Id",
         "Created",
-        "Region",
+        "Region (Journal)",
         "System Name",
         "Body Name",
         "Type",
@@ -185,13 +207,16 @@ def get_grreports():
        cols=[]
        cols.append(row.get("id"))
        cols.append(row.get("created_at"))
+
        region_id=row.get("regionID")
        if region_id is not None:
            region=REGIONS[region_id-1].get("name")
        else:
            region="Unknown"
        cols.append(region)
+
        cols.append(row.get("systemName"))
+       
        cols.append(row.get("bodyName").replace(row.get("systemName"),''))
        cols.append(row.get("type"))
        cols.append(row.get("frontierID"))
@@ -230,6 +255,7 @@ def get_gsreports():
        cols=[]
        cols.append(row.get("id"))
        cols.append(row.get("created_at"))
+
        cols.append(row.get("systemName"))
        cols.append(row.get("bodyName").replace(row.get("systemName"),''))
        cols.append(row.get("type"))
@@ -261,6 +287,8 @@ def get_gbreports():
        #print(row)
        cols=[]
        cols.append(row.get("created_at"))
+
+
        region_id=row.get("regionID")
        if region_id is not None:
            region=REGIONS[region_id-1].get("name")
@@ -286,7 +314,8 @@ def get_gssites():
         "Site Type",
         "System Name",
         "x","y","z",
-        "Region",
+        "Region (Calculated)",
+        "Region (Journal)",
         "Primary Star",
         "Body Name",
         "Journal Name",
@@ -311,6 +340,14 @@ def get_gssites():
        cols.append(row.get("system").get("edsmCoordX"))
        cols.append(row.get("system").get("edsmCoordY"))
        cols.append(row.get("system").get("edsmCoordZ"))
+       id64 = int(row.get("system").get("id64"))
+       masscode = id64 & 7
+       z = (((id64 >> 3) & (0x3FFF >> masscode)) << masscode) * 10 - 24105
+       y = (((id64 >> (17 - masscode)) & (0x1FFF >> masscode)) << masscode) * 10 - 40985
+       x = (((id64 >> (30 - masscode * 2)) & (0x3FFF >> masscode)) << masscode) * 10 - 49985
+       rid, region = findRegion(x, y, z)
+       cols.append(str(region))
+
        region_id=row.get("system").get("region")
        if region_id:
            region=REGIONS[region_id-1].get("name")
