@@ -11,6 +11,9 @@ import json
 from pathlib import Path
 from datetime import datetime
 from revenant import write_sheet
+import sys
+sys.path.append('EliteDangerousRegionMap')
+from RegionMap import findRegion
 
 CAPI="https://api.canonn.tech"
 
@@ -170,7 +173,8 @@ def get_sites(site):
         "Entry Id",
         "System Name",
         "x","y","z",
-        "Region",
+        "Region (Calculated)",
+        "Region (Journal)",
         "Primary Star",
         "Body Name",
         "POI Id",
@@ -213,6 +217,15 @@ def get_sites(site):
        cols.append(row.get("system").get("edsmCoordX"))
        cols.append(row.get("system").get("edsmCoordY"))
        cols.append(row.get("system").get("edsmCoordZ"))
+       id64 = int(row.get("system").get("id64"))
+       masscode = id64 & 7
+       z = (((id64 >> 3) & (0x3FFF >> masscode)) << masscode) * 10 - 24105
+       y = (((id64 >> (17 - masscode)) & (0x1FFF >> masscode)) << masscode) * 10 - 40985
+       x = (((id64 >> (30 - masscode * 2)) & (0x3FFF >> masscode)) << masscode) * 10 - 49985
+       rid, region = findRegion(x, y, z)
+       cols.append(str(region))
+
+
        region_id=row.get("system").get("region")
        if region_id:
            region=REGIONS[region_id-1].get("name")
