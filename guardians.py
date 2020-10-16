@@ -216,7 +216,7 @@ def get_grreports():
        cols.append(region)
 
        cols.append(row.get("systemName"))
-       
+
        cols.append(row.get("bodyName").replace(row.get("systemName"),''))
        cols.append(row.get("type"))
        cols.append(row.get("frontierID"))

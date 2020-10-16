@@ -243,7 +243,11 @@ def get_sites(site):
        cols.append(row.get("body").get("orbitalPeriod"))
        cols.append(row.get("body").get("rotationalPeriod"))
        cols.append(row.get("body").get("orbitalEccentricity"))
-       cols.append(row.get("discoveredBy").get("cmdrName"))
+       if row.get("discoveredBy") and row.get("discoveredBy").get("cmdrName"):
+           cols.append(row.get("discoveredBy").get("cmdrName"))
+       else:
+           cols.append("Unknown")
+
        retval.append(cols)
 
        
@@ -359,10 +363,17 @@ def enrich(cells,name):
 SHEETID="15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
 GUARDIAN_SHEET="1p20iT3HWAcRRJ8Cw60Z2tCVTpcBavhycvE0Jgg0h32Y"
 CLOUD_SHEET="11BCZRci0YlgW0sFdxvB_srq7ssxHzstMAiewhSGHE94"
+THARGSHEET="1YgQYFYBLXz_t9wBG-kN-y4AZjYsVX2hof_t8jI8vFGQ"
 
 cells=[]
 consolidated=[]
 cells.append([str(datetime.now().isoformat(timespec='minutes'))])
+
+tbcells=get_sites("tbsites")
+write_sheet(SHEETID,'Barnacle Sites!A1:Z',tbcells)
+write_sheet(THARGSHEET,'Barnacle Sites!A1:Z',tbcells)
+
+
 apcells=get_sites("apsites")
 write_sheet(SHEETID,'Amphora Plant Sites!A1:Z',apcells)
 consolidated.extend(enrich(apcells,"Amphora Plants"))
