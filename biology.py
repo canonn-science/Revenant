@@ -14,6 +14,7 @@ from revenant import write_sheet
 import sys
 sys.path.append('EliteDangerousRegionMap')
 from RegionMap import findRegion
+import requests
 
 CAPI="https://api.canonn.tech"
 
@@ -46,6 +47,22 @@ def __get_cursor():
     except OperationalError:
         mysql_conn.ping(reconnect=True)
         return mysql_conn.cursor()
+
+def get_price_list():
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0",
+       "Accept-Encoding": "gzip, deflate",
+    }
+    url="https://us-central1-canonn-api-236217.cloudfunctions.net/query/codex/prices"
+    r=requests.get(url,headers=headers)
+
+    results=[]
+    results.append(("Species","Offer Price"))
+    if r.status_code == requests.codes.ok:
+        data=r.json()
+        for k,v in data.items():
+            results.append((k,v.get("reward")))
+        return results
 
 def get_bio_signals():
     system="Merope"
@@ -369,6 +386,9 @@ cells=[]
 consolidated=[]
 cells.append([str(datetime.now().isoformat(timespec='minutes'))])
 
+prices=get_price_list()
+write_sheet(SHEETID,'Vista Genomics!A2:Z',prices)
+
 tbcells=get_sites("tbsites")
 write_sheet(SHEETID,'Barnacle Sites!A1:Z',tbcells)
 write_sheet(THARGSHEET,'Barnacle Sites!A1:Z',tbcells)
@@ -406,6 +426,8 @@ write_sheet(CLOUD_SHEET,'Header!B3',cells)
 #summarise the biosytems
 summarise_biosystems()
 bio_signals=get_bio_signals()
+
+
 
 write_sheet(SHEETID,'Signals!A2:Z',get_signal_cells())
 
