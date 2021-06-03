@@ -88,6 +88,7 @@ def get_codex_data():
             sheetdata.append([
                 row.get("species"),
                 row.get("species_id"),
+                row.get("00"),
                 row.get("01"),
                 row.get("02"),
                 row.get("03"),
