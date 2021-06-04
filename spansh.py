@@ -11,7 +11,7 @@ from apiclient.http import MediaFileUpload
 from google.oauth2 import service_account
 from googleapiclient import discovery
 from revenant import write_sheet
-
+import string
 
 sys.path.append('EliteDangerousRegionMap')
 
@@ -116,6 +116,67 @@ def get_primary_star(system):
             return body.get("subType")
 
 
+def get_parent_type_beta(system, body):
+    bodyName = body.get("name")
+    systemName = system.get("name")
+    shortName = bodyName.replace(f"{systemName} ", '')
+    bodies = system.get("bodies")
+
+    parts = shortName.split(' ')
+
+    for n in range(len(parts)-1, -1, -1):
+
+        newpart = " ".join(parts[:n])
+        if newpart.isupper():
+            print(f"converting newpart {newpart} to {newpart[0]}")
+            newpart = newpart[0]
+        newname = systemName+" "+newpart
+        print(newname)
+        for b in bodies:
+            if b.get("name") == newname and b.get("type") == "Star":
+                print(f"{newname} = Star")
+                #print("{} {}".format(b.get("name"), parentName))
+                return b.get("subType")
+
+    # fall back to this
+    primary = get_primary_star(system)
+    return primary
+
+
+def get_parent_type(system, body):
+    bodyName = body.get("name")
+    systemName = system.get("name")
+    shortName = bodyName.replace(f"{systemName} ", '')
+    bodies = system.get("bodies")
+
+    parents = body.get("parents")
+
+    get_parent_type_beta(system, body)
+
+    if parents:
+        for parent in parents:
+            pid = parent.get("Star")
+            bid = parent.get("None")
+            if pid or bid:
+                break
+        if pid:
+            for b in bodies:
+                if b.get("bodyId") == pid:
+                    return b.get("subType")
+    else:
+        print(f"{bodyName} has no parents")
+
+    if bodyName == systemName or shortName[0] in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
+        return get_primary_star(system)
+
+    parentName = "{} {}".format(systemName, shortName[0])
+
+    for b in bodies:
+        if b.get("name") == parentName:
+            #print("{} {}".format(b.get("name"), parentName))
+            return b.get("subType")
+
+
 codex_data = get_codex_data()
 print("done getting data")
 
@@ -160,6 +221,8 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                             cmdrname = entry.get("cmdrname")
                             region = findRegion64(j.get("id64"))
                             star = get_primary_star(j)
+                            parent_star = get_parent_type_beta(j, b)
+                            #print(f"{name}  {star} {parent_star}")
                             bodyType = b.get("subType")
                             atmosphereType = b.get("atmosphereType")
                             surfacePressure = b.get("surfacePressure")
@@ -177,6 +240,7 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                                     system,
                                     j.get("id64"),
                                     star,
+                                    parent_star,
                                     body,
                                     bodyType,
                                     atmosphereType,
@@ -196,11 +260,34 @@ credentials = service_account.Credentials.from_service_account_file(
     secret_file, scopes=scopes)
 drive = discovery.build('drive', 'v3', credentials=credentials)
 
+HEADERS = [
+    'Report Date',
+    'Name',
+    'Journal Name',
+    'EntryId',
+    'Cmdr',
+    'Region',
+    'System',
+    'Id64',
+    'Primary Star',
+    'Local Star',
+    'Body',
+    'BodyType',
+    'Atmosphere',
+    'Pressure',
+    'Volcanism',
+    'Gravity',
+    'Temperature'
+]
+
 
 def biosheet(type):
+    cells = []
+    cells.append(HEADERS)
+    cells.extend(classes.get(type))
     try:
         BIOSHEET = "15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
-        write_sheet(BIOSHEET, f"{type}!A2:Z", classes.get(type))
+        write_sheet(BIOSHEET, f"{type}!A1:Z", cells)
     except:
         print(f"sheet {type} doesn't exist")
 
@@ -227,10 +314,9 @@ biosheet("Tubus")
 biosheet("Tussocks")
 
 all_bio = []
+all_bio.append(HEADERS)
 for c in classes.keys():
     all_bio.extend(classes.get(c))
 
 BIOSHEET2 = "1x5vWnq-MON40uswkNmZpyVEarr9a3mEmZUk9dxo9KJo"
-write_sheet(BIOSHEET2, "All Biology!A2:Z", all_bio)
-
-
+write_sheet(BIOSHEET2, "All Biology!A1:Z", all_bio)
