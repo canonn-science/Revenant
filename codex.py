@@ -43,25 +43,26 @@ def __get_cursor():
 
 def get_codex_data():
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
-    sqltext = """select
-		replace(english_split->"$.species",'"','') as species,substr(entryid,1,5) species_id,
-		max(case when substr(entryid,-2,2) = '00' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "00",
-		max(case when substr(entryid,-2,2) = '01' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "01",
-		max(case when substr(entryid,-2,2) = '02' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "02",
-		max(case when substr(entryid,-2,2) = '03' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "03",
-		max(case when substr(entryid,-2,2) = '04' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "04",
-		max(case when substr(entryid,-2,2) = '05' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "05",
-		max(case when substr(entryid,-2,2) = '06' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "06",
-		max(case when substr(entryid,-2,2) = '07' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "07",
-		max(case when substr(entryid,-2,2) = '08' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "08",
-		max(case when substr(entryid,-2,2) = '09' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "09",
-		max(case when substr(entryid,-2,2) = '00' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "10",
-		max(case when substr(entryid,-2,2) = '11' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "11",
-		max(case when substr(entryid,-2,2) = '12' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "12",
-		max(case when substr(entryid,-2,2) = '13' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "13",
-		max(case when substr(entryid,-2,2) = '14' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "14",
-		max(case when substr(entryid,-2,2) = '15' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "15",
-		max(case when substr(entryid,-2,2) = '16' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "16"
+    sqltext = """
+        select
+            replace(english_split->"$.species",'"','') as species,substr(entryid,1,5) species_id,max(c.species_count) as species_count,
+            max(case when substr(entryid,-2,2) = '00' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "00",
+            max(case when substr(entryid,-2,2) = '01' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "01",
+            max(case when substr(entryid,-2,2) = '02' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "02",
+            max(case when substr(entryid,-2,2) = '03' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "03",
+            max(case when substr(entryid,-2,2) = '04' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "04",
+            max(case when substr(entryid,-2,2) = '05' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "05",
+            max(case when substr(entryid,-2,2) = '06' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "06",
+            max(case when substr(entryid,-2,2) = '07' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "07",
+            max(case when substr(entryid,-2,2) = '08' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "08",
+            max(case when substr(entryid,-2,2) = '09' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "09",
+            max(case when substr(entryid,-2,2) = '00' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "10",
+            max(case when substr(entryid,-2,2) = '11' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "11",
+            max(case when substr(entryid,-2,2) = '12' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "12",
+            max(case when substr(entryid,-2,2) = '13' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "13",
+            max(case when substr(entryid,-2,2) = '14' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "14",
+            max(case when substr(entryid,-2,2) = '15' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "15",
+            max(case when substr(entryid,-2,2) = '16' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "16"
 		from (
 		select
 		cast(concat('{"species": "',
@@ -73,8 +74,16 @@ def get_codex_data():
 		from codex_name_ref cnr where platform = 'odyssey'
 		order by entryid asc
 		) data
+		join (
+			select 
+				substr(entryid,1,5) as species_id,
+				count(distinct system,body) as species_count 
+			from codexreport 
+			where entryid in (select entryid from codex_name_ref where platform = 'odyssey')
+			group by substr(entryid,1,5)
+		) c on c.species_id = substr(entryid,1,5)
 		group by replace(english_split->"$.species",'"',''),substr(entryid,1,5)
-		order by substr(entryid,1,5)
+        order by substr(entryid,1,5)
 	"""
     cursor.execute(sqltext, ())
 
@@ -88,6 +97,7 @@ def get_codex_data():
             sheetdata.append([
                 row.get("species"),
                 row.get("species_id"),
+                row.get("species_count"),
                 row.get("00"),
                 row.get("01"),
                 row.get("02"),
@@ -113,6 +123,29 @@ def get_codex_data():
     return sheetdata
 
 
-sheetdata = get_codex_data()
+sheetdata = []
+sheetdata.append([
+    "Species",
+    "Species Id",
+    "Count",
+    "00",
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16"
+])
+sheetdata.extend(get_codex_data())
 BIOSHEET = "15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
-write_sheet(BIOSHEET, f"Odyssey Codex!A2:Z", sheetdata)
+write_sheet(BIOSHEET, f"Odyssey Codex!A1:Z", sheetdata)
