@@ -11,6 +11,7 @@ from apiclient.http import MediaFileUpload
 from google.oauth2 import service_account
 from googleapiclient import discovery
 from revenant import write_sheet
+from EliteDangerousRegionMap.RegionMapData import regions
 
 
 def get_db_secrets():
@@ -40,6 +41,54 @@ def __get_cursor():
         mysql_conn.ping(reconnect=True)
         return mysql_conn.cursor()
 
+def get_region_matrix():
+    cursor =  mysql_conn.cursor(pymysql.cursors.DictCursor)
+    sql = """
+        SELECT 
+            cnr.english_name,c.entryid,
+            replace(replace(region_name,'$Codex_RegionName_',''),';','') AS region,
+            COUNT(DISTINCT system) AS system_count 
+        FROM codexreport c join codex_name_ref cnr on cnr.entryid = c.entryid   
+        WHERE hud_category = 'Biology'
+        GROUP BY region_name,c.entryid,cnr.english_name
+        order by c.entryid asc
+       """
+    cursor.execute(sql, ())
+    data = cursor.fetchall()
+    
+    header=["Species","EntryId"]
+    header.extend(regions[1:])
+    cells=[header]
+    #Initialise the sheet
+    #42 regions + name and entryid
+    row=['']*44
+    
+    entrylist={}
+
+    for v in data:
+        entryid=v.get("entryid")
+        name=v.get("english_name")
+        region=int(v.get("region"))
+        systems=int(v.get("system_count"))
+        
+        
+        if not entrylist.get(entryid):
+            entrylist[entryid]=row.copy()
+
+        newrow=entrylist[entryid]
+        newrow[0]=name
+        newrow[1]=entryid
+        newrow[1+region]=systems
+        
+        entrylist[entryid]=newrow
+        
+    
+    for key,item in entrylist.items():
+        #print("{} {}".format(key,item[1]))
+        cells.append(item)
+
+    
+    return cells
 
 def get_codex_data():
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
@@ -149,3 +198,6 @@ sheetdata.append([
 sheetdata.extend(get_codex_data())
 BIOSHEET = "15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
 write_sheet(BIOSHEET, f"Odyssey Codex!A1:Z", sheetdata)
+
+write_sheet(BIOSHEET, f"Regions!A1:ZZ", get_region_matrix())
+
