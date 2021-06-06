@@ -130,7 +130,7 @@ def get_codex_data():
             max(case when substr(entryid,-2,2) = '07' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "07",
             max(case when substr(entryid,-2,2) = '08' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "08",
             max(case when substr(entryid,-2,2) = '09' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "09",
-            max(case when substr(entryid,-2,2) = '00' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "10",
+            max(case when substr(entryid,-2,2) = '10' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "10",
             max(case when substr(entryid,-2,2) = '11' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "11",
             max(case when substr(entryid,-2,2) = '12' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "12",
             max(case when substr(entryid,-2,2) = '13' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "13",
