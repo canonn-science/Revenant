@@ -19,6 +19,10 @@ sys.path.append('EliteDangerousRegionMap')
 if True:
     from RegionMap import findRegion
 
+# just going to inialise this opject
+file_object = open('/tmp/missingbio.csv', 'w')
+file_object.close()
+
 
 def findRegion64(id):
     id64 = int(id)
@@ -131,10 +135,10 @@ def get_parent_type_beta(system, body):
             #print(f"converting newpart {newpart} to {newpart[0]}")
             newpart = newpart[0]
         newname = systemName+" "+newpart
-        # print(newname)
+        # :qprint(newname)
         for b in bodies:
             if b.get("name") == newname and b.get("type") == "Star":
-                print(f"{newname} = Star")
+                #print(f"{newname} = Star")
                 #print("{} {}".format(b.get("name"), parentName))
                 return b.get("subType")
 
@@ -147,19 +151,16 @@ def record_bio(j):
     bodycount = 0
     for b in j.get("bodies"):
         try:
-            b.get("signals").get("signals").get("$SAA_SignalType_Biological;")
-            bodycount = bodycount+1
+            if b.get("signals").get("signals").get("$SAA_SignalType_Biological;"):
+                bodycount = bodycount+1
         except:
             pass
 
     if bodycount > 0:
         system = j.get("name")
-        x = j.get("coords").get("x")
-        y = j.get("coords").get("y")
-        z = j.get("coords").get("z")
         file_object = open('/tmp/missingbio.csv', 'a')
         # Append 'hello' at the end of file
-        file_object.write(f"{system},{x},{y},{z},{bodycount}\n")
+        file_object.write(f"{j}\n")
         # Close the file
         file_object.close()
 
