@@ -41,6 +41,31 @@ def __get_cursor():
         mysql_conn.ping(reconnect=True)
         return mysql_conn.cursor()
 
+def capture_codex_ref():
+    with __get_cursor() as cursor:
+        sql = """
+            insert into codex_name_ref
+                select name,entryid,category,sub_category,name_localised,'Biology' as hud_category,replace(name_components->"$.value[0]",'"','') as sub_class,'odyssey' as platform  from (
+                select
+                        v.*,
+                        cast(concat('{"value": ["',replace(replace(replace(name,'$Codex_Ent_',''),'_Name;',''),'_','","'),'"]}') as json) as name_components,
+                        cast(concat('{"species": "',replace(name_localised,' - ','","colour": "'),'"}') as json) as english_split
+                from v_unknown_codex v
+                ) data
+                where replace(english_split->"$.colour",'"','') in (
+                select distinct replace(english_split->"$.colour",'"','') as colour from (
+                select replace(replace(name,'$Codex_Ent_',''),'_Name;','') as name,english_name ,
+                cast(concat('{"species": "',replace(english_name,' - ','","colour": "'),'"}') as json) as english_split
+                from codex_name_ref where platform = 'odyssey'
+                order by 1
+                ) data2
+                )
+        """
+        cursor.execute(sql, ())
+        mysql_conn.commit()
+        cursor.close()
+
+
 def get_region_matrix():
     cursor =  mysql_conn.cursor(pymysql.cursors.DictCursor)
     sql = """
@@ -170,6 +195,9 @@ def get_codex_data():
             break
 
     return sheetdata
+
+
+capture_codex_ref()
 
 
 sheetdata = []
