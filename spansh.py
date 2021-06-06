@@ -128,10 +128,10 @@ def get_parent_type_beta(system, body):
 
         newpart = " ".join(parts[:n])
         if newpart.isupper():
-            print(f"converting newpart {newpart} to {newpart[0]}")
+            #print(f"converting newpart {newpart} to {newpart[0]}")
             newpart = newpart[0]
         newname = systemName+" "+newpart
-        print(newname)
+        # print(newname)
         for b in bodies:
             if b.get("name") == newname and b.get("type") == "Star":
                 print(f"{newname} = Star")
@@ -141,6 +141,27 @@ def get_parent_type_beta(system, body):
     # fall back to this
     primary = get_primary_star(system)
     return primary
+
+
+def record_bio(j):
+    bodycount = 0
+    for b in j.get("bodies"):
+        try:
+            b.get("signals").get("signals").get("$SAA_SignalType_Biological;")
+            bodycount = bodycount+1
+        except:
+            pass
+
+    if bodycount > 0:
+        system = j.get("name")
+        x = j.get("coords").get("x")
+        y = j.get("coords").get("y")
+        z = j.get("coords").get("z")
+        file_object = open('/tmp/missingbio.csv', 'a')
+        # Append 'hello' at the end of file
+        file_object.write(f"{system},{x},{y},{z},{bodycount}\n")
+        # Close the file
+        file_object.close()
 
 
 def get_parent_type(system, body):
@@ -199,7 +220,9 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
             system = j.get("name")
             has_system = (codex_data.get(system))
 
-            if has_system:
+            if not has_system:
+                record_bio(j)
+            else:
                 for b in j.get("bodies"):
                     body = b.get("name")
 
