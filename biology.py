@@ -424,12 +424,9 @@ write_sheet(SHEETID,'Header!B3',cells)
 write_sheet(CLOUD_SHEET,'Header!B3',cells)
 
 #summarise the biosytems
-summarise_biosystems()
-bio_signals=get_bio_signals()
-
-
-
-write_sheet(SHEETID,'Signals!A2:Z',get_signal_cells())
+#summarise_biosystems()
+#bio_signals=get_bio_signals()
+#write_sheet(SHEETID,'Signals!A2:Z',get_signal_cells())
 
 
 
