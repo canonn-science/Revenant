@@ -396,26 +396,26 @@ write_sheet(THARGSHEET,'Barnacle Sites!A1:Z',tbcells)
 
 apcells=get_sites("apsites")
 write_sheet(SHEETID,'Amphora Plant Sites!A1:Z',apcells)
-consolidated.extend(enrich(apcells,"Amphora Plants"))
+#consolidated.extend(enrich(apcells,"Amphora Plants"))
 
 apcells=get_sites("bmsites")
 write_sheet(SHEETID,'Bark Mound Sites!A1:Z',apcells)
-consolidated.extend(enrich(apcells,"Bark Mounds"))
+#consolidated.extend(enrich(apcells,"Bark Mounds"))
 
 fgcells=get_sites("fgsites")
 write_sheet(SHEETID,'Anemone Sites!A1:Z',fgcells)
-consolidated.extend(enrich(fgcells,"Amenomes"))
+#consolidated.extend(enrich(fgcells,"Amenomes"))
 cscells=get_sites("cssites")
 write_sheet(SHEETID,'Crystaline Shard Sites!A1:Z',cscells)
-consolidated.extend(enrich(cscells,"Crystaline Shards"))
+#consolidated.extend(enrich(cscells,"Crystaline Shards"))
 twcells=get_sites("twsites")
 write_sheet(SHEETID,'Sinuous Tuber Sites!A1:Z',twcells)
-consolidated.extend(enrich(twcells,"Sinuous Tubers"))
+#consolidated.extend(enrich(twcells,"Sinuous Tubers"))
 btcells=get_sites("btsites")
 write_sheet(SHEETID,'Brain Tree Sites!A1:Z',btcells)
-consolidated.extend(enrich(btcells,"Brain Trees"))
+#consolidated.extend(enrich(btcells,"Brain Trees"))
 write_sheet(GUARDIAN_SHEET,'Brain Tree Sites!A1:Z',btcells)
-write_sheet(SHEETID,'Consolidated!A2:Z',consolidated)
+#write_sheet(SHEETID,'Consolidated!A2:Z',consolidated)
 
 
 
