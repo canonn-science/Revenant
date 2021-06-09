@@ -20,7 +20,7 @@ if True:
     from RegionMap import findRegion
 
 # just going to inialise this opject
-file_object = open('/tmp/missingbio.csv', 'w')
+file_object = open('/tmp/missingbio.jsonl', 'w')
 file_object.close()
 
 
@@ -151,16 +151,16 @@ def record_bio(j):
     bodycount = 0
     for b in j.get("bodies"):
         try:
-            if b.get("signals").get("signals").get("$SAA_SignalType_Biological;"):
+            if b.get("signals").get("signals").get("$SAA_SignalType_Biological;") or b.get("codex"):
                 bodycount = bodycount+1
         except:
             pass
 
     if bodycount > 0:
         system = j.get("name")
-        file_object = open('/tmp/missingbio.csv', 'a')
+        file_object = open('/tmp/missingbio.jsonl', 'a')
         # Append 'hello' at the end of file
-        file_object.write(f"{j}\n")
+        file_object.write(f"{json.dumps(j)}\n")
         # Close the file
         file_object.close()
 
@@ -220,11 +220,12 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                 j = json.loads(line[:-1])
             system = j.get("name")
             has_system = (codex_data.get(system))
+            has_biology = False
 
             if not has_system:
                 record_bio(j)
             else:
-                for b in j.get("bodies"):
+                for i, b in enumerate(j.get("bodies")):
                     body = b.get("name")
 
                     has_body = (
@@ -232,6 +233,9 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                     )
 
                     if has_body:
+                        has_biology = True
+                        # adding codex to j so we can store it
+                        j["bodies"][i]["codex"] = codex_data[system]["bodies"][body]["entries"]
                         codex_data[system]["bodies"][body]["edsm"] = b
                         for key, entry in codex_data[system]["bodies"][body]["entries"].items():
 
@@ -275,6 +279,8 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
 
                                 ])
 
+                if has_biology:
+                    record_bio(j)
 
 scopes = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file",
           "https://www.googleapis.com/auth/spreadsheets"]
