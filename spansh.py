@@ -20,7 +20,7 @@ if True:
     from RegionMap import findRegion
 
 # just going to inialise this opject
-file_object = open('/tmp/missingbio.jsonl', 'w')
+file_object = open('/tmp/biosigns.jsonl', 'w')
 file_object.close()
 
 
@@ -158,7 +158,7 @@ def record_bio(j):
 
     if bodycount > 0:
         system = j.get("name")
-        file_object = open('/tmp/missingbio.jsonl', 'a')
+        file_object = open('/tmp/biosigns.jsonl', 'a')
         # Append 'hello' at the end of file
         file_object.write(f"{json.dumps(j)}\n")
         # Close the file
