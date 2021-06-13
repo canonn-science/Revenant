@@ -118,7 +118,8 @@ def get_region_matrix():
 def get_codex_data():
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
     sqltext = """
-        select
+SELECT DATA3.reward,DATA2.* FROM (
+     select
             replace(english_split->"$.species",'"','') as species,substr(entryid,1,5) species_id,max(c.species_count) as species_count,
             max(case when substr(entryid,-2,2) = '00' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "00",
             max(case when substr(entryid,-2,2) = '01' then replace(concat(english_split->"$.colour",' - ',name_split->"$.p[4]"),'"','') else null end) as "01",
@@ -158,6 +159,20 @@ def get_codex_data():
 		) c on c.species_id = substr(entryid,1,5)
 		group by replace(english_split->"$.species",'"',''),substr(entryid,1,5)
         order by substr(entryid,1,5)
+     ) DATA2   
+     LEFT JOIN (
+     SELECT 
+                distinct sub_species->"$.p[0]" as sub_species,reward
+                from (		 
+                select 
+                cnr.entryid,
+                cast(concat('{"p": ["',replace(english_name,' - ','","'),'"]}') as json) sub_species,reward,sub_class
+            FROM organic_sales os
+            LEFT JOIN codex_name_ref cnr ON cnr.name LIKE
+            REPLACE(os.species,'_Name;','%%')
+            ) data
+     ) DATA3 ON DATA3.sub_species = DATA2.species 
+     ORDER BY species_id asc
 	"""
     cursor.execute(sqltext, ())
 
@@ -171,6 +186,7 @@ def get_codex_data():
             sheetdata.append([
                 row.get("species"),
                 row.get("species_id"),
+                row.get("reward"),
                 row.get("species_count"),
                 row.get("00"),
                 row.get("01"),
@@ -204,6 +220,7 @@ sheetdata = []
 sheetdata.append([
     "Species",
     "Species Id",
+    "Reward",
     "Count",
     "00",
     "01",
