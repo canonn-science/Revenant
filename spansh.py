@@ -329,6 +329,7 @@ print(json.dumps(classes, indent=4))
 
 biosheet("Aleoids")
 biosheet("Bacterial")
+biosheet("Brain Tree")
 biosheet("Cactoid")
 biosheet("Clypeus")
 biosheet("Conchas")
