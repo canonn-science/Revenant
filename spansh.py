@@ -1,6 +1,6 @@
 #!/bin/env python3
 import gzip
-import json
+import simplejson as json
 import os
 import pymysql
 import sys
@@ -132,14 +132,14 @@ def get_parent_type_beta(system, body):
 
         newpart = " ".join(parts[:n])
         if newpart.isupper():
-            #print(f"converting newpart {newpart} to {newpart[0]}")
+            # print(f"converting newpart {newpart} to {newpart[0]}")
             newpart = newpart[0]
         newname = systemName+" "+newpart
         # :qprint(newname)
         for b in bodies:
             if b.get("name") == newname and b.get("type") == "Star":
-                #print(f"{newname} = Star")
-                #print("{} {}".format(b.get("name"), parentName))
+                # print(f"{newname} = Star")
+                # print("{} {}".format(b.get("name"), parentName))
                 return b.get("subType")
 
     # fall back to this
@@ -195,7 +195,7 @@ def get_parent_type(system, body):
 
     for b in bodies:
         if b.get("name") == parentName:
-            #print("{} {}".format(b.get("name"), parentName))
+            # print("{} {}".format(b.get("name"), parentName))
             return b.get("subType")
 
 
@@ -208,6 +208,121 @@ output_data = []
 home = str(Path.home())
 results = []
 classes = {}
+biostats = {}
+
+
+def refloat(value):
+    if value:
+        return float(value)
+    else:
+        return None
+
+
+def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism):
+    global biostats
+
+    if volcanism is None:
+        volcanism = "No volcanism"
+
+    biostats[codex.get("entryid")] = {
+        "name": codex.get("english_name"),
+        "bodies": set([bodytype]),
+        "ming": refloat(grav),
+        "maxg": refloat(grav),
+        "mint": refloat(temp),
+        "maxt": refloat(temp),
+        "minp": refloat(pressure),
+        "maxp": refloat(pressure),
+        "mind": refloat(distanceToArrival),
+        "maxd": refloat(distanceToArrival),
+        "atmosphereType": set([atmo]),
+        "primaryStars": set([star]),
+        "localStars": set([parentstar]),
+        "regions": set([region]),
+        "volcanism": set([volcanism]),
+        "solidComposition": set(),
+        "atmosComposition": set(),
+        "materials": set()
+    }
+
+    if atmoComp:
+        biostats[codex.get("entryid")]["atmosComposition"] = set(
+            atmoComp.keys())
+    if solidComp:
+        biostats[codex.get("entryid")]["solidComposition"] = set(
+            solidComp.keys())
+    if mats:
+        biostats[codex.get("entryid")]["materials"] = set(
+            mats.keys())
+
+
+def smin(a, b):
+    if a is None and b is None:
+        return None
+    if a is None:
+        return b
+    if b is None:
+        return a
+    return min(a, b)
+
+
+def smax(a, b):
+    if a is None and b is None:
+        return None
+    if a is None:
+        return b
+    if b is None:
+        return a
+    return max(a, b)
+
+
+def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism):
+    global biostats
+
+    if volcanism is None:
+        volcanism = "No volcanism"
+
+    if biostats.get(codex.get("entryid")):
+        biostats[codex.get("entryid")]["bodies"].add(bodytype)
+        biostats[codex.get("entryid")]["ming"] = smin(
+            refloat(grav), biostats[codex.get("entryid")]["ming"])
+        biostats[codex.get("entryid")]["maxg"] = smax(
+            refloat(grav), biostats[codex.get("entryid")]["maxg"])
+        biostats[codex.get("entryid")]["mint"] = smin(
+            refloat(temp), biostats[codex.get("entryid")]["mint"])
+        biostats[codex.get("entryid")]["maxt"] = smax(
+            refloat(temp), biostats[codex.get("entryid")]["maxt"])
+        biostats[codex.get("entryid")]["minp"] = smin(
+            refloat(pressure), biostats[codex.get("entryid")]["minp"])
+        biostats[codex.get("entryid")]["maxp"] = smax(
+            refloat(pressure), biostats[codex.get("entryid")]["maxp"])
+        biostats[codex.get("entryid")]["mind"] = smin(
+            refloat(distanceToArrival), biostats[codex.get("entryid")]["mind"])
+        biostats[codex.get("entryid")]["maxd"] = smax(
+            refloat(distanceToArrival), biostats[codex.get("entryid")]["maxd"])
+        biostats[codex.get("entryid")]["atmosphereType"].add(atmo)
+        biostats[codex.get("entryid")]["primaryStars"].add(star)
+        biostats[codex.get("entryid")]["localStars"].add(parentstar)
+        biostats[codex.get("entryid")]["regions"].add(region)
+        biostats[codex.get("entryid")]["volcanism"].add(volcanism)
+
+        if solidComp:
+            biostats[codex.get("entryid")]["solidComposition"] = biostats[codex.get("entryid")]["solidComposition"].intersection(
+                set(solidComp.keys()))
+
+        if atmoComp:
+            biostats[codex.get("entryid")]["atmosComposition"] = biostats[codex.get("entryid")]["atmosComposition"].intersection(set(
+                atmoComp.keys())
+            )
+
+        if mats:
+            biostats[codex.get("entryid")]["materials"] = biostats[codex.get(
+                "entryid")]["materials"].intersection(set(mats.keys()))
+    else:
+        initStats(codex, grav, temp, atmo, bodytype, star, parentstar,
+                  pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism)
+    # print(biostats.get(codex.get("entryid")))
+
 
 with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
     for line in f:
@@ -250,13 +365,31 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                             region = findRegion64(j.get("id64"))
                             star = get_primary_star(j)
                             parent_star = get_parent_type_beta(j, b)
-                            #print(f"{name}  {star} {parent_star}")
+                            # print(f"{name}  {star} {parent_star}")
                             bodyType = b.get("subType")
                             atmosphereType = b.get("atmosphereType")
                             surfacePressure = b.get("surfacePressure")
                             volcanism = b.get("volcanismType")
                             gravity = b.get("gravity")
                             surfaceTemperature = b.get("surfaceTemperature")
+
+                            gatherStats(
+                                entry,
+                                gravity,
+                                surfaceTemperature,
+                                atmosphereType,
+                                bodyType,
+                                star,
+                                parent_star,
+                                surfacePressure,
+                                b.get("solidComposition"),
+                                b.get("atmosphereComposition"),
+                                b.get("materials"),
+                                region,
+                                b.get("distanceToArrival"),
+                                volcanism
+                            )
+
                             classes[entry.get("genus")].append(
                                 [
                                     reported_at,
@@ -321,9 +454,9 @@ def biosheet(type):
     except:
         print(f"sheet {type} doesn't exist")
 
-
 # for genus in classes.keys():
 #    biosheet(genus)
+
 
 print(json.dumps(classes, indent=4))
 
@@ -351,3 +484,24 @@ for c in classes.keys():
 
 BIOSHEET2 = "1x5vWnq-MON40uswkNmZpyVEarr9a3mEmZUk9dxo9KJo"
 write_sheet(BIOSHEET2, "All Biology!A1:Z", all_bio)
+
+
+def write_file(id, name, description, count):
+    fcount = locale.format_string("%d", count, grouping=True)
+    full_desc = f"""{description}
+
+{fcount} patrols
+    """
+    file_metadata = {"title": name, "description": full_desc}
+
+    media = MediaFileUpload(name, mimetype='application/json')
+    file = drive.files().update(body=file_metadata, media_body=media,
+                                fields='id', fileId=id).execute()
+    print('Upload {} File ID: {}'.format(name, file.get('id')))
+
+
+with open('biostats2.json', 'w') as f:
+    json.dump(biostats, f,  iterable_as_array=True)
+
+write_file("14t7SKjLyATHVipuqNiGT-ziA2nRW8sKj", "biostats2.json",
+           "Range of Conditions for Biological types\n", len(biostats))
