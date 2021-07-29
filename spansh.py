@@ -385,7 +385,7 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                                 b.get("solidComposition"),
                                 b.get("atmosphereComposition"),
                                 b.get("materials"),
-                                region,
+                                region[1],
                                 b.get("distanceToArrival"),
                                 volcanism
                             )
