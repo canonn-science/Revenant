@@ -281,6 +281,8 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
 
     if volcanism is None:
         volcanism = "No volcanism"
+    if atmo is None:
+        atmo = "No atmosphere"
 
     if biostats.get(codex.get("entryid")):
         biostats[codex.get("entryid")]["bodies"].add(bodytype)
