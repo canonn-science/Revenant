@@ -12,6 +12,7 @@ from google.oauth2 import service_account
 from googleapiclient import discovery
 from revenant import write_sheet
 from EliteDangerousRegionMap.RegionMapData import regions
+import requests
 
 
 def get_db_secrets():
@@ -20,6 +21,8 @@ def get_db_secrets():
         data = json.load(json_file)
         return data
 
+
+speciesdata = {}
 
 secret = get_db_secrets()
 
@@ -40,6 +43,7 @@ def __get_cursor():
     except OperationalError:
         mysql_conn.ping(reconnect=True)
         return mysql_conn.cursor()
+
 
 def capture_codex_ref():
     with __get_cursor() as cursor:
@@ -67,7 +71,7 @@ def capture_codex_ref():
 
 
 def get_region_matrix():
-    cursor =  mysql_conn.cursor(pymysql.cursors.DictCursor)
+    cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
     sql = """
         SELECT 
             cnr.english_name,c.entryid,
@@ -80,40 +84,199 @@ def get_region_matrix():
        """
     cursor.execute(sql, ())
     data = cursor.fetchall()
-    
-    header=["Species","EntryId"]
+
+    header = ["Species", "EntryId"]
     header.extend(regions[1:])
-    cells=[header]
-    #Initialise the sheet
-    #42 regions + name and entryid
-    row=['']*44
-    
-    entrylist={}
+    cells = [header]
+    # Initialise the sheet
+    # 42 regions + name and entryid
+    row = ['']*44
+
+    entrylist = {}
 
     for v in data:
-        entryid=v.get("entryid")
-        name=v.get("english_name")
-        region=int(v.get("region"))
-        systems=int(v.get("system_count"))
-        
-        
-        if not entrylist.get(entryid):
-            entrylist[entryid]=row.copy()
+        entryid = v.get("entryid")
+        name = v.get("english_name")
+        region = int(v.get("region"))
+        systems = int(v.get("system_count"))
 
-        newrow=entrylist[entryid]
-        newrow[0]=name
-        newrow[1]=entryid
-        newrow[1+region]=systems
-        
-        entrylist[entryid]=newrow
-        
-    
-    for key,item in entrylist.items():
+        if not entrylist.get(entryid):
+            entrylist[entryid] = row.copy()
+
+        newrow = entrylist[entryid]
+        newrow[0] = name
+        newrow[1] = entryid
+        newrow[1+region] = systems
+
+        entrylist[entryid] = newrow
+
+    for key, item in entrylist.items():
         #print("{} {}".format(key,item[1]))
         cells.append(item)
 
-    
     return cells
+
+
+def get_scan_speeds():
+    global speciesdata
+    cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
+    sqltext = """
+        select distinct species,seconds,
+        case 
+        when species = '$Codex_Ent_Seed_Name;' then 'Roseum Brain Tree'
+        when species = '$Codex_Ent_SeedEFGH_Name;' then 'Lividum Brain Tree'
+        when species = '$Codex_Ent_Sphere_Name;' then 'Luteolum Anemone'
+        when species = '$Codex_Ent_SphereEFGH_Name;' then 'Blatteum Bioluminescent Anemone'
+        when species = '$Codex_Ent_TubeEFGH_Name;' then 'Blatteum Sinuous Tubers'
+        when species = '$Codex_Ent_Tube_Name;' then 'Roseum Sinuous Tubers'
+        else replace(sub_species->"$.p[0]",'"','')
+        end
+        #replace(sub_species->"$.p[0]",'"','') 
+        as sub_species from (
+        select data3.*,cast(concat('{"p": ["',replace(english_name,' - ','","'),'"]}') as json) sub_species  from (
+        select species,min(seconds) as seconds from (
+        select cmdr,species,analysed,logged,TIMESTAMPDIFF(SECOND,logged,analysed) seconds from (
+        select a.cmdr,a.species,a.reported_at as analysed,
+            (
+                select b.reported_at as logged 
+                from organic_scans b
+                where b.scantype = 'Log'
+                and a.system = b.system
+                and a.body_id = b.body_id
+                and b.reported_at < a.reported_at
+                and a.cmdr = b.cmdr
+                and a.species = b.species
+                order by b.reported_at
+                limit 1
+        ) as logged
+        from organic_scans a
+        where  scantype = 'Analyse'
+        order by reported_at desc
+        ) data
+        ) data2
+        group by species
+        ) data3 
+        LEFT JOIN codex_name_ref cnr ON cnr.name LIKE
+                    REPLACE(data3.species,'_Name;','%%')
+        ) data4
+        order by 2 asc
+    """
+    cursor.execute(sqltext, ())
+
+    sheetdata = []
+
+    while True:
+        row = cursor.fetchone()
+
+        if row:
+            speciesdata[row.get("species")] = row
+            sheetdata.append([
+                row.get("sub_species"),
+                row.get("seconds"),
+            ])
+
+        else:
+            break
+
+    return sheetdata
+
+
+def get_challenge_scans():
+    global speciesdata
+    cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
+    sqltext = """
+        select species,min(seconds) as seconds from (
+        select cmdr,species,analysed,logged,TIMESTAMPDIFF(SECOND,logged,analysed) seconds from (
+        select a.cmdr,a.species,a.reported_at as analysed,
+            (
+                select b.reported_at as logged 
+                from organic_scans b
+                where b.system = 'Tucanae Sector AF-A d71' 
+                and b.body_id = 23 
+                and b.scantype = 'Log'
+                and b.reported_at < a.reported_at
+                and a.cmdr = b.cmdr
+                and a.species = b.species
+                order by b.reported_at
+                limit 1
+        ) as logged
+        from organic_scans a
+        where system = 'Tucanae Sector AF-A d71' and body_id = 23 and scantype = 'Analyse'
+        order by reported_at desc
+        ) data
+        ) data2
+        group by species
+        order by 2 asc
+    """
+    cursor.execute(sqltext, ())
+
+    sheetdata = []
+
+    while True:
+        row = cursor.fetchone()
+
+        if row:
+
+            sheetdata.append([
+                speciesdata.get(row.get("species")).get("sub_species"),
+                row.get("seconds"),
+                speciesdata.get(row.get("species")).get("seconds")
+            ])
+
+        else:
+            break
+
+    return sheetdata
+
+
+def get_challenge_splits():
+    global speciesdata
+    cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
+    sqltext = """
+        select * from (
+        select cmdr,species,analysed,logged,TIMESTAMPDIFF(SECOND,logged,analysed) seconds from (
+        select a.cmdr,a.species,a.reported_at as analysed,
+            (
+                select b.reported_at as logged 
+                from organic_scans b
+                where b.system = 'Tucanae Sector AF-A d71' 
+                and b.body_id = 23 
+                and b.scantype = 'Log'
+                and b.reported_at < a.reported_at
+                and a.cmdr = b.cmdr
+                and a.species = b.species
+                order by b.reported_at
+                limit 1
+        ) as logged
+        from organic_scans a
+        where system = 'Tucanae Sector AF-A d71' and body_id = 23 and scantype = 'Analyse'
+        order by reported_at desc
+        ) data
+        ) data2
+        order by seconds asc
+    """
+    cursor.execute(sqltext, ())
+
+    sheetdata = []
+
+    while True:
+        row = cursor.fetchone()
+
+        if row:
+
+            sheetdata.append([
+                row.get("cmdr"),
+                speciesdata.get(row.get("species")).get("sub_species"),
+                str(row.get("analysed")),
+                str(row.get("logged")),
+                row.get("seconds")
+            ])
+
+        else:
+            break
+
+    return sheetdata
+
 
 def get_codex_data():
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
@@ -213,7 +376,44 @@ SELECT DATA3.reward,DATA2.* FROM (
     return sheetdata
 
 
+def get_leaders():
+    r = requests.get(
+        "https://us-central1-canonn-api-236217.cloudfunctions.net/query/challenge/speed")
+    leaders = r.json()
+
+    sheetdata = []
+    # Cmdr	Started	Ended	Seconds	Aleoid	Bacterium	Cactoid	Concha	Fungoid	Osseus	Shrub	Stratum	Tussock
+    for row in leaders:
+        sheetdata.append([
+            row.get("cmdr"),
+            str(row.get("started") or ""),
+            str(row.get("ended") or ""),
+            row.get("seconds") or "",
+            row.get("aleoid") or "",
+            row.get("bacterium") or "",
+            row.get("cactoid") or "",
+            row.get("concha") or "",
+            row.get("fungoid") or "",
+            row.get("osseus") or "",
+            row.get("shrub") or "",
+            row.get("stratum") or "",
+            row.get("tussock" or "")
+        ])
+
+    return sheetdata
+
+
 capture_codex_ref()
+allscans = get_scan_speeds()
+challenge = get_challenge_scans()
+splits = get_challenge_splits()
+leaderboard = get_leaders()
+
+CHALLENGESHEET = "1Lpu3r2QCPa6BiSPGqCB7WS_QWghBQfVlfpgl92pXJSU"
+write_sheet(CHALLENGESHEET, f"Splits!A2:Z", splits)
+write_sheet(CHALLENGESHEET, f"Galactic Records!A2:Z", allscans)
+write_sheet(CHALLENGESHEET, f"Best Times!A2:Z", challenge)
+write_sheet(CHALLENGESHEET, f"Leader Board!A2:Z", leaderboard)
 
 
 sheetdata = []
@@ -245,4 +445,3 @@ BIOSHEET = "15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
 write_sheet(BIOSHEET, f"Odyssey Codex!A1:Z", sheetdata)
 
 write_sheet(BIOSHEET, f"Regions!A1:ZZ", get_region_matrix())
-
