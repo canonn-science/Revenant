@@ -375,6 +375,55 @@ SELECT DATA3.reward,DATA2.* FROM (
 
     return sheetdata
 
+def get_top_ten(species):
+    cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
+    sqltext = """
+		select * from (
+        select cmdr,species,analysed,logged,TIMESTAMPDIFF(SECOND,logged,analysed) seconds from (
+        select a.cmdr,a.species,a.reported_at as analysed,
+            (
+                select b.reported_at as logged 
+                from organic_scans b
+                where b.system = a.system
+                and b.body_id = a.body_id
+                and b.scantype = 'Log'
+                and b.reported_at < a.reported_at
+                and a.cmdr = b.cmdr
+                and a.species = b.species
+                AND a.species = %s
+                order by b.reported_at
+                limit 1
+        ) as logged
+        from organic_scans a
+        where scantype = 'Analyse'
+        AND species = %s
+        order by reported_at desc
+        ) data
+        ) data2
+        WHERE logged IS NOT null
+        order by seconds ASC LIMIT 10    
+    """
+    cursor.execute(sqltext, (species,species))
+    
+    sheetdata=[]
+
+    while True:
+        row = cursor.fetchone()
+
+        if row:
+
+            sheetdata.append([
+                row.get("cmdr"),
+                str(row.get("analysed")),
+                str(row.get("logged")),
+                row.get("seconds")
+            ])
+
+        else:
+            break
+
+    return sheetdata
+
 
 def get_leaders():
     r = requests.get(
@@ -411,10 +460,18 @@ leaderboard = get_leaders()
 
 CHALLENGESHEET = "1Lpu3r2QCPa6BiSPGqCB7WS_QWghBQfVlfpgl92pXJSU"
 write_sheet(CHALLENGESHEET, f"Splits!A2:Z", splits)
-write_sheet(CHALLENGESHEET, f"Galactic Records!A2:Z", allscans)
+write_sheet(CHALLENGESHEET, f"Galactic Records!A2:B", allscans)
 write_sheet(CHALLENGESHEET, f"Best Times!A2:Z", challenge)
 write_sheet(CHALLENGESHEET, f"Leader Board!A2:Z", leaderboard)
-
+write_sheet(CHALLENGESHEET, f"Galactic Records!D3:G12", get_top_ten('$Codex_Ent_Aleoids_02_Name;'))
+write_sheet(CHALLENGESHEET, f"Galactic Records!D16:G25", get_top_ten('$Codex_Ent_Bacterial_01_Name;'))
+write_sheet(CHALLENGESHEET, f"Galactic Records!D29:G38", get_top_ten('$Codex_Ent_Cactoid_01_Name;'))
+write_sheet(CHALLENGESHEET, f"Galactic Records!D42:G51", get_top_ten('$Codex_Ent_Conchas_01_Name;'))
+write_sheet(CHALLENGESHEET, f"Galactic Records!D55:G64", get_top_ten('$Codex_Ent_Fungoids_02_Name;'))
+write_sheet(CHALLENGESHEET, f"Galactic Records!D68:G77", get_top_ten('$Codex_Ent_Osseus_01_Name;'))
+write_sheet(CHALLENGESHEET, f"Galactic Records!D81:G90", get_top_ten('$Codex_Ent_Shrubs_02_Name;'))
+write_sheet(CHALLENGESHEET, f"Galactic Records!D94:G103", get_top_ten('$Codex_Ent_Stratum_01_Name;'))
+write_sheet(CHALLENGESHEET, f"Galactic Records!D107:G116", get_top_ten('$Codex_Ent_Tussocks_11_Name;'))
 
 sheetdata = []
 sheetdata.append([
