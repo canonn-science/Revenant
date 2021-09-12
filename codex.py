@@ -146,7 +146,7 @@ def get_scan_speeds():
                 and b.reported_at < a.reported_at
                 and a.cmdr = b.cmdr
                 and a.species = b.species
-                order by b.reported_at
+                order by b.reported_at desc
                 limit 1
         ) as logged
         from organic_scans a
@@ -197,7 +197,7 @@ def get_challenge_scans():
                 and b.reported_at < a.reported_at
                 and a.cmdr = b.cmdr
                 and a.species = b.species
-                order by b.reported_at
+                order by b.reported_at desc
                 limit 1
         ) as logged
         from organic_scans a
@@ -245,7 +245,7 @@ def get_challenge_splits():
                 and b.reported_at < a.reported_at
                 and a.cmdr = b.cmdr
                 and a.species = b.species
-                order by b.reported_at
+                order by b.reported_at desc
                 limit 1
         ) as logged
         from organic_scans a
@@ -391,7 +391,7 @@ def get_top_ten(species):
                 and a.cmdr = b.cmdr
                 and a.species = b.species
                 AND a.species = %s
-                order by b.reported_at
+                order by b.reported_at desc
                 limit 1
         ) as logged
         from organic_scans a
