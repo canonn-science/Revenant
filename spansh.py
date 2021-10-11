@@ -102,14 +102,14 @@ def get_codex_data():
                 data[system]["bodies"][body]["entries"][entryid] = {}
 
         # at this point we have a system and a body but the category won't exist
-                data[system]["bodies"][body]["entries"][entryid] = {
+            data[system]["bodies"][body]["entries"][entryid] = {
                     "reported_at": row.get("reported_at"),
                     "cmdrname": row.get("cmdrname"),
                     "name": row.get("name"),
                     "english_name": row.get("english_name"),
                     "genus": row.get("sub_class"),
                     "entryid": row.get("entryid"),
-                }
+            }
     return data
 
 
