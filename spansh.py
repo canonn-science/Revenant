@@ -103,12 +103,12 @@ def get_codex_data():
 
         # at this point we have a system and a body but the category won't exist
             data[system]["bodies"][body]["entries"][entryid] = {
-                    "reported_at": row.get("reported_at"),
-                    "cmdrname": row.get("cmdrname"),
-                    "name": row.get("name"),
-                    "english_name": row.get("english_name"),
-                    "genus": row.get("sub_class"),
-                    "entryid": row.get("entryid"),
+                "reported_at": row.get("reported_at"),
+                "cmdrname": row.get("cmdrname"),
+                "name": row.get("name"),
+                "english_name": row.get("english_name"),
+                "genus": row.get("sub_class"),
+                "entryid": row.get("entryid"),
             }
     return data
 
@@ -226,6 +226,7 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
 
     biostats[codex.get("entryid")] = {
         "name": codex.get("english_name"),
+        "id": codex.get("name"),
         "bodies": set([bodytype]),
         "ming": refloat(grav),
         "maxg": refloat(grav),
