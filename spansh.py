@@ -68,7 +68,7 @@ def __get_cursor():
 def get_codex_data():
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
     sql = """
-        SELECT cr.name,cast(reported_at as char) as reported_at,system,body,cr.entryid,english_name,sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,platform FROM codexreport cr
+        SELECT cr.name,cast(reported_at as char) as reported_at,system,body,cr.entryid,english_name,sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform FROM codexreport cr
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
         WHERE body IS NOT NULL AND body != '' AND (hud_category = 'Biology' or english_name like '%%Barnacle%%')
         ORDER BY created_at asc
