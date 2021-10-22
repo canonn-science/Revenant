@@ -46,6 +46,38 @@ def __get_cursor():
         mysql_conn.ping(reconnect=True)
         return mysql_conn.cursor()
 
+SOL = [0, 0, 0]
+MEROPE = [-78.59375, -149.625, -340.53125]
+COALSACK = [423.5625, 0.5, 277.75]  # Musca Dark Region PJ-P b6-8
+WITCHHEAD = [355.75, -400.5, -707.21875]  # Ronemar
+CALIFORNIA = [-299.0625, -229.25, -876.125]  # HIP 18390
+CONESECTOR = [609.4375, 154.25, -1503.59375]  # Outotz ST-I d9-4
+
+def getDistance(a, b):
+    return round(sqrt(pow(float(a[0])-float(b[0]), 2)+pow(float(a[1])-float(b[1]), 2)+pow(float(a[2])-float(b[2]), 2)),1)
+
+def getNearest(r):
+    x = r.get("x")
+    y = r.get("y")
+    z = r.get("z")
+    d = [
+        {"name": "Sol", "distance": getDistance(
+            [x, y, z], SOL), "coords": SOL},
+        {"name": "Merope", "distance": getDistance(
+            [x, y, z], MEROPE), "coords": MEROPE},
+        {"name": "Coalsack", "distance": getDistance(
+            [x, y, z], COALSACK), "coords": COALSACK},
+        {"name": "Witchhead", "distance": getDistance(
+            [x, y, z], WITCHHEAD), "coords": WITCHHEAD},
+        {"name": "California", "distance": getDistance(
+            [x, y, z], CALIFORNIA), "coords": CALIFORNIA},
+        {"name": "Cone Sector", "distance": getDistance(
+            [x, y, z], CONESECTOR), "coords": CONESECTOR},
+    ]
+    d.sort(key=lambda dx: dx["distance"], reverse=False)
+    
+    return d[0]
+
 
 def get_hd_monitor():
 
@@ -114,7 +146,9 @@ def get_nhss_reported():
         "Threat 9",
         "x",
         "y",
-        "z"
+        "z",
+        "Bubble",
+        "Distance (ly)"
     ]
     data.append(header)
     for rec in cursor.fetchall():
@@ -135,6 +169,9 @@ def get_nhss_reported():
         cols.append(str(rec.get("x")))
         cols.append(str(rec.get("y")))
         cols.append(str(rec.get("z")))
+        nearest=getNearest(rec)
+        cols.append(str(nearest.get("name")))
+        cols.append(str(nearest.get("distance")))
         data.append(cols)
     return data
 
@@ -256,7 +293,7 @@ def get_locations(hd_detected):
             cols.append(str(rec.get("dx")))
             cols.append(str(rec.get("dy")))
             cols.append(str(rec.get("dz")))
-            cols.append(str(distance))
+            cols.append(str("distance"))
             data.append(cols)
     return data
 
@@ -270,7 +307,7 @@ hdcells = merge_hd_data(hd_monitor, hd_detected)
 write_sheet(THARGOID_SHEET, 'Hyperdictions!A2:Z', sorted(hdcells))
 write_sheet(THARGOID_SHEET, 'Hyperdiction Detections!A1:K',
             get_locations(hd_detected))
-write_sheet(THARGOID_SHEET, 'NHSS Locations!A1:P',
+write_sheet(THARGOID_SHEET, 'NHSS Locations!A1:R',
             get_nhss_reported())
 write_sheet(THARGOID_SHEET, 'Surface Encounters!A2:Z',
             get_surface_encounters())
