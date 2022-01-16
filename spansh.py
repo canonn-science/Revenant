@@ -413,7 +413,7 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                                     volcanism,
                                     gravity,
                                     surfaceTemperature,
-
+                                    b.get("distanceToArrival")
                                 ])
 
                 if has_biology:
@@ -444,7 +444,8 @@ HEADERS = [
     'Pressure',
     'Volcanism',
     'Gravity',
-    'Temperature'
+    'Temperature',
+    'Distance To Arrival'
 ]
 
 
