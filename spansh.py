@@ -234,6 +234,7 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
 
     biostats[codex.get("entryid")] = {
         "name": codex.get("english_name"),
+        "count": 1,
         "id": codex.get("name"),
         "platform": codex.get("platform"),
         "bodies": set([bodytype]),
@@ -318,6 +319,7 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
         biostats[codex.get("entryid")]["localStars"].add(parentstar)
         biostats[codex.get("entryid")]["regions"].add(region)
         biostats[codex.get("entryid")]["volcanism"].add(volcanism)
+        biostats[codex.get("entryid")]["count"] += 1
 
         if types:
             biostats[codex.get("entryid")]["systemBodyTypes"] = biostats[codex.get("entryid")]["systemBodyTypes"].intersection(
