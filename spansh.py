@@ -147,6 +147,14 @@ def get_parent_type_beta(system, body):
     return primary
 
 
+def get_sub_types(system):
+    types = set()
+    bodies = system.get("bodies")
+    for body in bodies:
+        types.add(body.get("subType"))
+    return types
+
+
 def record_bio(j):
     bodycount = 0
     for b in j.get("bodies"):
@@ -218,7 +226,7 @@ def refloat(value):
         return None
 
 
-def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism):
+def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
     global biostats
 
     if volcanism is None:
@@ -244,7 +252,8 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
         "volcanism": set([volcanism]),
         "solidComposition": set(),
         "atmosComposition": set(),
-        "materials": set()
+        "materials": set(),
+        "systemBodyTypes": types
     }
 
     if atmoComp:
@@ -278,7 +287,7 @@ def smax(a, b):
     return max(a, b)
 
 
-def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism):
+def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
     global biostats
 
     if volcanism is None:
@@ -310,6 +319,10 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
         biostats[codex.get("entryid")]["regions"].add(region)
         biostats[codex.get("entryid")]["volcanism"].add(volcanism)
 
+        if types:
+            biostats[codex.get("entryid")]["systemBodyTypes"] = biostats[codex.get("entryid")]["systemBodyTypes"].intersection(
+                set(types))
+
         if solidComp:
             biostats[codex.get("entryid")]["solidComposition"] = biostats[codex.get("entryid")]["solidComposition"].intersection(
                 set(solidComp.keys()))
@@ -324,7 +337,7 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
                 "entryid")]["materials"].intersection(set(mats.keys()))
     else:
         initStats(codex, grav, temp, atmo, bodytype, star, parentstar,
-                  pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism)
+                  pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types)
     # print(biostats.get(codex.get("entryid")))
 
 
@@ -376,6 +389,7 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                             volcanism = b.get("volcanismType")
                             gravity = b.get("gravity")
                             surfaceTemperature = b.get("surfaceTemperature")
+                            body_types = get_sub_types(j)
 
                             gatherStats(
                                 entry,
@@ -391,7 +405,8 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                                 b.get("materials"),
                                 region[1],
                                 b.get("distanceToArrival"),
-                                volcanism
+                                volcanism,
+                                body_types
                             )
 
                             classes[entry.get("genus")].append(
