@@ -217,6 +217,7 @@ home = str(Path.home())
 results = []
 classes = {}
 biostats = {}
+histograms = {}
 
 
 def refloat(value):
@@ -225,9 +226,16 @@ def refloat(value):
     else:
         return None
 
+def increment(value):
+    if value:
+        return value +1
+    else:
+        return 1
+
 
 def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
     global biostats
+    global histograms
 
     if volcanism is None:
         volcanism = "No volcanism"
@@ -257,6 +265,26 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
         "systemBodyTypes": types
     }
 
+    histograms[codex.get("entryid")] = {
+        "dist": [refloat(distanceToArrival)],
+        "grav": [refloat(grav)],
+        "temp": [refloat(temp)],
+        "pres": [refloat(pressure)]
+    }
+    
+    biostats[codex.get("entryid")]["histograms"]={}
+    biostats[codex.get("entryid")]["histograms"]["body_types"]={}
+    biostats[codex.get("entryid")]["histograms"]["primary_stars"]={}
+    biostats[codex.get("entryid")]["histograms"]["atmos_types"]={}
+    biostats[codex.get("entryid")]["histograms"]["local_stars"]={}
+    biostats[codex.get("entryid")]["histograms"]["body_types"][bodytype] = 1
+    biostats[codex.get("entryid")]["histograms"]["primary_stars"][star] = 1
+    biostats[codex.get("entryid")]["histograms"]["atmos_types"][atmo] = 1
+    biostats[codex.get("entryid")]["histograms"]["local_stars"][parentstar] = 1
+    biostats[codex.get("entryid")]["histograms"]["materials"]={}
+
+    
+    
     if atmoComp:
         biostats[codex.get("entryid")]["atmosComposition"] = set(
             atmoComp.keys())
@@ -266,6 +294,9 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
     if mats:
         biostats[codex.get("entryid")]["materials"] = set(
             mats.keys())
+        for mat in mats.keys():
+            biostats[codex.get("entryid")]["histograms"]["materials"][mat] = 1
+    
 
 
 def smin(a, b):
@@ -337,6 +368,21 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
         if mats:
             biostats[codex.get("entryid")]["materials"] = biostats[codex.get(
                 "entryid")]["materials"].intersection(set(mats.keys()))
+
+        histograms[codex.get("entryid")]["dist"].append(refloat(distanceToArrival))
+        histograms[codex.get("entryid")]["grav"].append(refloat(grav))
+        histograms[codex.get("entryid")]["temp"].append(refloat(temp))
+        histograms[codex.get("entryid")]["pres"].append(refloat(pressure))
+
+        biostats[codex.get("entryid")]["histograms"]["body_types"][bodytype] = increment(biostats[codex.get("entryid")]["histograms"]["body_types"].get(bodytype))
+        biostats[codex.get("entryid")]["histograms"]["primary_stars"][star] = increment(biostats[codex.get("entryid")]["histograms"]["primary_stars"].get(star))
+        biostats[codex.get("entryid")]["histograms"]["local_stars"][parentstar] = increment(biostats[codex.get("entryid")]["histograms"]["local_stars"].get(parentstar))        
+        biostats[codex.get("entryid")]["histograms"]["atmos_types"][atmo] = increment(biostats[codex.get("entryid")]["histograms"]["atmos_types"].get(atmo))
+
+        if mats:
+            for mat in mats.keys():
+                biostats[codex.get("entryid")]["histograms"]["materials"][mat] = increment(biostats[codex.get("entryid")]["histograms"]["materials"].get(mat))
+
     else:
         initStats(codex, grav, temp, atmo, bodytype, star, parentstar,
                   pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types)
@@ -520,6 +566,41 @@ def write_file(id, name, description, count):
     file = drive.files().update(body=file_metadata, media_body=media,
                                 fields='id', fileId=id).execute()
     print('Upload {} File ID: {}'.format(name, file.get('id')))
+
+
+
+def histogram_data(data,cols):
+    # find max and min
+    a=min(data)
+    z=max(data)
+    # get distance between them
+    w=z-a
+    # increment is the distance / columns
+    i = w/cols
+
+    retval=[]
+    
+    for col in range(1,cols):
+        column={
+            "min": col*i,
+            "max": (col*i)+i,
+            # count values between max and min
+            "value":  ((col*i <= data) & (data <= (col*i)+i)).sum()
+        }
+        retval.append(column)
+    return retval
+
+
+
+def process_histograms():
+    global biostats
+    global histograms
+
+    for entry in histograms.keys():
+        biostats[codex.get("entryid")]["histograms"]["distance"] = histogram_data(histograms[codex.get("entryid")]["dist"],12)
+        biostats[codex.get("entryid")]["histograms"]["gravity"] = histogram_data(histograms[codex.get("entryid")]["grav"],12)
+        biostats[codex.get("entryid")]["histograms"]["temperature"] = histogram_data(histograms[codex.get("entryid")]["temp"],12)
+        biostats[codex.get("entryid")]["histograms"]["pressure"] = histogram_data(histograms[codex.get("entryid")]["pres"],12)
 
 
 with open('biostats2.json', 'w') as f:
