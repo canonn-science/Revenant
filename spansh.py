@@ -65,12 +65,21 @@ def __get_cursor():
         return mysql_conn.cursor()
 
 
+"""
+
+We want to get codex enrties with no body information
+For these we will record region primary and contents but nothing else
+We will need to add a specific gather stats stage
+
+"""
+
+
 def get_codex_data():
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
     sql = """
         SELECT cr.name,cast(reported_at as char) as reported_at,system,body,cr.entryid,english_name,sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform FROM codexreport cr
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
-        WHERE body IS NOT NULL AND body != '' AND (hud_category = 'Biology' or english_name like '%%Barnacle%%')
+        WHERE hud_category not in ('Tourist','Geology') and english_name not like '%%Barnacle Barbs%%'
         ORDER BY created_at asc
     """
     cursor.execute(sql, ())
@@ -82,13 +91,22 @@ def get_codex_data():
         if row == None:
             break
         system = row.get("system")
+
         body = row.get("body")
+
+        # None will be a special case
+        if not body or body == "":
+            body = "None"
+
         entryid = row.get("entryid")
         # system has many bodies a body has many categories
+
         has_system = (data.get(system))
         has_body = (has_system and data.get(system).get("bodies").get(body))
         has_entry = (has_body and data.get(system).get(
             "bodies").get(body).get("entries").get(entryid))
+
+        # if the row has a body
 
         if not has_entry:
             if not has_system:
@@ -97,11 +115,13 @@ def get_codex_data():
                     "bodies": {}
                 }
             # at this point we have a system so we can add a body
+
             if not has_body:
                 data[system]["bodies"][body] = {"entries": {}}
                 data[system]["bodies"][body]["entries"][entryid] = {}
 
         # at this point we have a system and a body but the category won't exist
+            print(f"{row.get('name')} {body}")
             data[system]["bodies"][body]["entries"][entryid] = {
                 "reported_at": row.get("reported_at"),
                 "cmdrname": row.get("cmdrname"),
@@ -110,6 +130,7 @@ def get_codex_data():
                 "genus": row.get("sub_class"),
                 "entryid": row.get("entryid"),
             }
+    print(json.dumps(data, indent=4))
     return data
 
 
@@ -226,11 +247,19 @@ def refloat(value):
     else:
         return None
 
+
 def increment(value):
     if value:
-        return value +1
+        return value + 1
     else:
         return 1
+
+
+"""
+
+This will need to be modified to cope with no body codex entries
+
+"""
 
 
 def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
@@ -265,26 +294,34 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
         "systemBodyTypes": types
     }
 
-    histograms[codex.get("entryid")] = {
-        "dist": [refloat(distanceToArrival)],
-        "grav": [refloat(grav)],
-        "temp": [refloat(temp)],
-        "pres": [refloat(pressure)]
-    }
-    
-    biostats[codex.get("entryid")]["histograms"]={}
-    biostats[codex.get("entryid")]["histograms"]["body_types"]={}
-    biostats[codex.get("entryid")]["histograms"]["primary_stars"]={}
-    biostats[codex.get("entryid")]["histograms"]["atmos_types"]={}
-    biostats[codex.get("entryid")]["histograms"]["local_stars"]={}
-    biostats[codex.get("entryid")]["histograms"]["body_types"][bodytype] = 1
-    biostats[codex.get("entryid")]["histograms"]["primary_stars"][star] = 1
-    biostats[codex.get("entryid")]["histograms"]["atmos_types"][atmo] = 1
-    biostats[codex.get("entryid")]["histograms"]["local_stars"][parentstar] = 1
-    biostats[codex.get("entryid")]["histograms"]["materials"]={}
+    biostats[codex.get("entryid")]["histograms"] = {}
+    biostats[codex.get("entryid")]["histograms"]["body_types"] = {}
+    biostats[codex.get("entryid")]["histograms"]["primary_stars"] = {}
+    biostats[codex.get("entryid")]["histograms"]["atmos_types"] = {}
+    biostats[codex.get("entryid")]["histograms"]["local_stars"] = {}
+    biostats[codex.get("entryid")]["histograms"]["materials"] = {}
 
-    
-    
+    if bodytype is not None:
+        histograms[codex.get("entryid")] = {
+            "dist": [refloat(distanceToArrival)],
+            "grav": [refloat(grav)],
+            "temp": [refloat(temp)],
+            "pres": [refloat(pressure)]
+        }
+        biostats[codex.get("entryid")
+                 ]["histograms"]["body_types"][bodytype] = 1
+        biostats[codex.get("entryid")]["histograms"]["primary_stars"][star] = 1
+        biostats[codex.get("entryid")]["histograms"]["atmos_types"][atmo] = 1
+        biostats[codex.get("entryid")
+                 ]["histograms"]["local_stars"][parentstar] = 1
+    else:
+        histograms[codex.get("entryid")] = {
+            "dist": [],
+            "grav": [],
+            "temp": [],
+            "pres": []
+        }
+
     if atmoComp:
         biostats[codex.get("entryid")]["atmosComposition"] = set(
             atmoComp.keys())
@@ -296,7 +333,6 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
             mats.keys())
         for mat in mats.keys():
             biostats[codex.get("entryid")]["histograms"]["materials"][mat] = 1
-    
 
 
 def smin(a, b):
@@ -319,38 +355,47 @@ def smax(a, b):
     return max(a, b)
 
 
+"""
+
+This will need to be modified to cope with no body codex entries
+
+"""
+
+
 def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
     global biostats
 
-    if volcanism is None:
+    if volcanism is None and bodyType is not None:
         volcanism = "No volcanism"
-    if atmo is None:
+    if atmo is None and bodyType is not None:
         atmo = "No atmosphere"
 
     if biostats.get(codex.get("entryid")):
-        biostats[codex.get("entryid")]["bodies"].add(bodytype)
-        biostats[codex.get("entryid")]["ming"] = smin(
-            refloat(grav), biostats[codex.get("entryid")]["ming"])
-        biostats[codex.get("entryid")]["maxg"] = smax(
-            refloat(grav), biostats[codex.get("entryid")]["maxg"])
-        biostats[codex.get("entryid")]["mint"] = smin(
-            refloat(temp), biostats[codex.get("entryid")]["mint"])
-        biostats[codex.get("entryid")]["maxt"] = smax(
-            refloat(temp), biostats[codex.get("entryid")]["maxt"])
-        biostats[codex.get("entryid")]["minp"] = smin(
-            refloat(pressure), biostats[codex.get("entryid")]["minp"])
-        biostats[codex.get("entryid")]["maxp"] = smax(
-            refloat(pressure), biostats[codex.get("entryid")]["maxp"])
-        biostats[codex.get("entryid")]["mind"] = smin(
-            refloat(distanceToArrival), biostats[codex.get("entryid")]["mind"])
-        biostats[codex.get("entryid")]["maxd"] = smax(
-            refloat(distanceToArrival), biostats[codex.get("entryid")]["maxd"])
-        biostats[codex.get("entryid")]["atmosphereType"].add(atmo)
-        biostats[codex.get("entryid")]["primaryStars"].add(star)
-        biostats[codex.get("entryid")]["localStars"].add(parentstar)
+        if bodytype is not None:
+            biostats[codex.get("entryid")]["bodies"].add(bodytype)
+            biostats[codex.get("entryid")]["ming"] = smin(
+                refloat(grav), biostats[codex.get("entryid")]["ming"])
+            biostats[codex.get("entryid")]["maxg"] = smax(
+                refloat(grav), biostats[codex.get("entryid")]["maxg"])
+            biostats[codex.get("entryid")]["mint"] = smin(
+                refloat(temp), biostats[codex.get("entryid")]["mint"])
+            biostats[codex.get("entryid")]["maxt"] = smax(
+                refloat(temp), biostats[codex.get("entryid")]["maxt"])
+            biostats[codex.get("entryid")]["minp"] = smin(
+                refloat(pressure), biostats[codex.get("entryid")]["minp"])
+            biostats[codex.get("entryid")]["maxp"] = smax(
+                refloat(pressure), biostats[codex.get("entryid")]["maxp"])
+            biostats[codex.get("entryid")]["mind"] = smin(
+                refloat(distanceToArrival), biostats[codex.get("entryid")]["mind"])
+            biostats[codex.get("entryid")]["maxd"] = smax(
+                refloat(distanceToArrival), biostats[codex.get("entryid")]["maxd"])
+            biostats[codex.get("entryid")]["atmosphereType"].add(atmo)
+            biostats[codex.get("entryid")]["localStars"].add(parentstar)
+            biostats[codex.get("entryid")]["volcanism"].add(volcanism)
+
         biostats[codex.get("entryid")]["regions"].add(region)
-        biostats[codex.get("entryid")]["volcanism"].add(volcanism)
         biostats[codex.get("entryid")]["count"] += 1
+        biostats[codex.get("entryid")]["primaryStars"].add(star)
 
         if types:
             biostats[codex.get("entryid")]["systemBodyTypes"] = biostats[codex.get("entryid")]["systemBodyTypes"].intersection(
@@ -369,24 +414,79 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
             biostats[codex.get("entryid")]["materials"] = biostats[codex.get(
                 "entryid")]["materials"].intersection(set(mats.keys()))
 
-        histograms[codex.get("entryid")]["dist"].append(refloat(distanceToArrival))
-        histograms[codex.get("entryid")]["grav"].append(refloat(grav))
-        histograms[codex.get("entryid")]["temp"].append(refloat(temp))
-        histograms[codex.get("entryid")]["pres"].append(refloat(pressure))
+        if bodyType is not None:
+            histograms[codex.get("entryid")]["dist"].append(
+                refloat(distanceToArrival))
+            histograms[codex.get("entryid")]["grav"].append(refloat(grav))
+            histograms[codex.get("entryid")]["temp"].append(refloat(temp))
+            histograms[codex.get("entryid")]["pres"].append(refloat(pressure))
 
-        biostats[codex.get("entryid")]["histograms"]["body_types"][bodytype] = increment(biostats[codex.get("entryid")]["histograms"]["body_types"].get(bodytype))
-        biostats[codex.get("entryid")]["histograms"]["primary_stars"][star] = increment(biostats[codex.get("entryid")]["histograms"]["primary_stars"].get(star))
-        biostats[codex.get("entryid")]["histograms"]["local_stars"][parentstar] = increment(biostats[codex.get("entryid")]["histograms"]["local_stars"].get(parentstar))        
-        biostats[codex.get("entryid")]["histograms"]["atmos_types"][atmo] = increment(biostats[codex.get("entryid")]["histograms"]["atmos_types"].get(atmo))
+            biostats[codex.get("entryid")]["histograms"]["body_types"][bodytype] = increment(
+                biostats[codex.get("entryid")]["histograms"]["body_types"].get(bodytype))
+
+            biostats[codex.get("entryid")]["histograms"]["local_stars"][parentstar] = increment(
+                biostats[codex.get("entryid")]["histograms"]["local_stars"].get(parentstar))
+            biostats[codex.get("entryid")]["histograms"]["atmos_types"][atmo] = increment(
+                biostats[codex.get("entryid")]["histograms"]["atmos_types"].get(atmo))
+
+        biostats[codex.get("entryid")]["histograms"]["primary_stars"][star] = increment(
+            biostats[codex.get("entryid")]["histograms"]["primary_stars"].get(star))
 
         if mats:
             for mat in mats.keys():
-                biostats[codex.get("entryid")]["histograms"]["materials"][mat] = increment(biostats[codex.get("entryid")]["histograms"]["materials"].get(mat))
+                biostats[codex.get("entryid")]["histograms"]["materials"][mat] = increment(
+                    biostats[codex.get("entryid")]["histograms"]["materials"].get(mat))
 
     else:
         initStats(codex, grav, temp, atmo, bodytype, star, parentstar,
                   pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types)
     # print(biostats.get(codex.get("entryid")))
+
+
+def store_non_body_codex(system):
+    global codex_data
+    global classes
+
+    star = get_primary_star(system)
+    region = findRegion64(system.get("id64"))
+    body_types = get_sub_types(system)
+
+    if codex_data.get(system.get("name")) and codex_data.get(system.get("name")).get("bodies") and codex_data.get(system.get("name")).get("bodies").get("None"):
+
+        for key, entry in codex_data[system.get("name")]["bodies"]["None"]["entries"].items():
+            print(entry.get("english_name"))
+            gatherStats(
+                entry,
+                None, None, None, None,
+                star,
+                None, None, None, None, None,
+                region[1],
+                None, None,
+                body_types
+            )
+
+            if not classes.get(entry.get("genus")):
+                classes[entry.get("genus")] = []
+
+            fdevname = entry.get("name")
+            reported_at = entry.get("reported_at")
+            cmdrname = entry.get("cmdrname")
+
+            # print(f"{name}  {star} {parent_star}")
+
+            classes[entry.get("genus")].append(
+                [
+                    reported_at,
+                    entry.get("english_name"),
+                    fdevname,
+                    entry.get("entryid"),
+                    entry.get("cmdrname"),
+                    region[1],
+                    system.get("name"),
+                    system.get("id64"),
+                    star,
+                    None, None, None, None, None, None, None, None, None
+                ])
 
 
 with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
@@ -402,9 +502,14 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
             has_system = (codex_data.get(system))
             has_biology = False
 
+            """
+            Add in s step to detect no body codex items and process them
+            """
+
             if not has_system:
                 record_bio(j)
             else:
+                store_non_body_codex(j)
                 for i, b in enumerate(j.get("bodies")):
                     body = b.get("name")
 
@@ -568,20 +673,19 @@ def write_file(id, name, description, count):
     print('Upload {} File ID: {}'.format(name, file.get('id')))
 
 
-
-def histogram_data(data,cols):
+def histogram_data(data, cols):
     # find max and min
-    a=min(data)
-    z=max(data)
+    a = min(data)
+    z = max(data)
     # get distance between them
-    w=z-a
+    w = z-a
     # increment is the distance / columns
     i = w/cols
 
-    retval=[]
-    
-    for col in range(1,cols):
-        column={
+    retval = []
+
+    for col in range(1, cols):
+        column = {
             "min": col*i,
             "max": (col*i)+i,
             # count values between max and min
@@ -591,16 +695,19 @@ def histogram_data(data,cols):
     return retval
 
 
-
 def process_histograms():
     global biostats
     global histograms
 
     for entry in histograms.keys():
-        biostats[codex.get("entryid")]["histograms"]["distance"] = histogram_data(histograms[codex.get("entryid")]["dist"],12)
-        biostats[codex.get("entryid")]["histograms"]["gravity"] = histogram_data(histograms[codex.get("entryid")]["grav"],12)
-        biostats[codex.get("entryid")]["histograms"]["temperature"] = histogram_data(histograms[codex.get("entryid")]["temp"],12)
-        biostats[codex.get("entryid")]["histograms"]["pressure"] = histogram_data(histograms[codex.get("entryid")]["pres"],12)
+        biostats[codex.get("entryid")]["histograms"]["distance"] = histogram_data(
+            histograms[codex.get("entryid")]["dist"], 12)
+        biostats[codex.get("entryid")]["histograms"]["gravity"] = histogram_data(
+            histograms[codex.get("entryid")]["grav"], 12)
+        biostats[codex.get("entryid")]["histograms"]["temperature"] = histogram_data(
+            histograms[codex.get("entryid")]["temp"], 12)
+        biostats[codex.get("entryid")]["histograms"]["pressure"] = histogram_data(
+            histograms[codex.get("entryid")]["pres"], 12)
 
 
 with open('biostats2.json', 'w') as f:
