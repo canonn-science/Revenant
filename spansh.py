@@ -77,7 +77,7 @@ We will need to add a specific gather stats stage
 def get_codex_data():
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
     sql = """
-        SELECT cr.name,cast(reported_at as char) as reported_at,system,body,cr.entryid,english_name,sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform FROM codexreport cr
+        SELECT cr.name,cast(reported_at as char) as reported_at,system,body,cr.entryid,english_name,sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform,cnr.hud_category FROM codexreport cr
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
         WHERE hud_category not in ('Tourist','Geology') and english_name not like '%%Barnacle Barbs%%'
         ORDER BY created_at asc
@@ -128,9 +128,10 @@ def get_codex_data():
                 "name": row.get("name"),
                 "english_name": row.get("english_name"),
                 "genus": row.get("sub_class"),
+                "hud_category": row.get("hud_category"),
                 "entryid": row.get("entryid"),
             }
-    print(json.dumps(data, indent=4))
+
     return data
 
 
@@ -271,6 +272,7 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
 
     biostats[codex.get("entryid")] = {
         "name": codex.get("english_name"),
+        "hud_category": codex.get("hud_category"),
         "count": 1,
         "id": codex.get("name"),
         "platform": codex.get("platform"),
