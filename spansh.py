@@ -456,7 +456,7 @@ def store_non_body_codex(system):
     if codex_data.get(system.get("name")) and codex_data.get(system.get("name")).get("bodies") and codex_data.get(system.get("name")).get("bodies").get("None"):
 
         for key, entry in codex_data[system.get("name")]["bodies"]["None"]["entries"].items():
-            print(entry.get("english_name"))
+            # print(entry.get("english_name"))
             gatherStats(
                 entry,
                 None, None, None, None,
@@ -633,7 +633,7 @@ def biosheet(type):
 #    biosheet(genus)
 
 
-print(json.dumps(classes, indent=4))
+#print(json.dumps(classes, indent=4))
 
 biosheet("Aleoids")
 biosheet("Bacterial")
