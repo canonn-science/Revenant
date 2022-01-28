@@ -712,6 +712,8 @@ def process_histograms():
             histograms[codex.get("entryid")]["pres"], 12)
 
 
+process_histograms()
+
 with open('biostats2.json', 'w') as f:
     json.dump(biostats, f,  iterable_as_array=True)
 
