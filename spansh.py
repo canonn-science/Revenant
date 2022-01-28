@@ -619,48 +619,6 @@ HEADERS = [
 ]
 
 
-def biosheet(type):
-    cells = []
-    cells.append(HEADERS)
-    cells.extend(classes.get(type))
-    try:
-        BIOSHEET = "15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
-        write_sheet(BIOSHEET, f"{type}!A1:Z", cells)
-    except:
-        print(f"sheet {type} doesn't exist")
-
-# for genus in classes.keys():
-#    biosheet(genus)
-
-
-#print(json.dumps(classes, indent=4))
-
-biosheet("Aleoids")
-biosheet("Bacterial")
-biosheet("Brain Tree")
-biosheet("Cactoid")
-biosheet("Clypeus")
-biosheet("Conchas")
-biosheet("Electricae")
-biosheet("Fonticulus")
-biosheet("Fumerolas")
-biosheet("Fungoids")
-biosheet("Osseus")
-biosheet("Recepta")
-biosheet("Shrubs")
-biosheet("Stratum")
-biosheet("Tubus")
-biosheet("Tussocks")
-
-all_bio = []
-all_bio.append(HEADERS)
-for c in classes.keys():
-    all_bio.extend(classes.get(c))
-
-BIOSHEET2 = "1x5vWnq-MON40uswkNmZpyVEarr9a3mEmZUk9dxo9KJo"
-write_sheet(BIOSHEET2, "All Biology!A1:Z", all_bio)
-
-
 def write_file(id, name, description, count):
     fcount = locale.format_string("%d", count, grouping=True)
     full_desc = f"""{description}
@@ -719,3 +677,45 @@ with open('biostats2.json', 'w') as f:
 
 write_file("14t7SKjLyATHVipuqNiGT-ziA2nRW8sKj", "biostats2.json",
            "Range of Conditions for Biological types\n", len(biostats))
+
+
+def biosheet(type):
+    cells = []
+    cells.append(HEADERS)
+    cells.extend(classes.get(type))
+    try:
+        BIOSHEET = "15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
+        write_sheet(BIOSHEET, f"{type}!A1:Z", cells)
+    except:
+        print(f"sheet {type} doesn't exist")
+
+# for genus in classes.keys():
+#    biosheet(genus)
+
+
+#print(json.dumps(classes, indent=4))
+
+biosheet("Aleoids")
+biosheet("Bacterial")
+biosheet("Brain Tree")
+biosheet("Cactoid")
+biosheet("Clypeus")
+biosheet("Conchas")
+biosheet("Electricae")
+biosheet("Fonticulus")
+biosheet("Fumerolas")
+biosheet("Fungoids")
+biosheet("Osseus")
+biosheet("Recepta")
+biosheet("Shrubs")
+biosheet("Stratum")
+biosheet("Tubus")
+biosheet("Tussocks")
+
+all_bio = []
+all_bio.append(HEADERS)
+for c in classes.keys():
+    all_bio.extend(classes.get(c))
+
+BIOSHEET2 = "1x5vWnq-MON40uswkNmZpyVEarr9a3mEmZUk9dxo9KJo"
+write_sheet(BIOSHEET2, "All Biology!A1:Z", all_bio)
