@@ -658,6 +658,7 @@ def histogram_data(data, cols):
 def process_histograms():
     global biostats
     global histograms
+    global codex
 
     for entry in histograms.keys():
         biostats[codex.get("entryid")]["histograms"]["distance"] = histogram_data(
