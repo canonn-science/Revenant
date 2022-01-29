@@ -83,7 +83,7 @@ def get_codex_data():
         union
         SELECT '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,bodyName,-1,'Nonhuman Signature','Thargoid', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid'
         FROM raw_events
-        WHERE raw_event LIKE '%POIScene_Wreckage_UA%'
+        WHERE raw_event LIKE '%%POIScene_Wreckage_UA%%'
         ORDER BY created_at asc
     """
     cursor.execute(sql, ())
