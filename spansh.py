@@ -80,6 +80,10 @@ def get_codex_data():
         SELECT cr.name,cast(reported_at as char) as reported_at,system,body,cr.entryid,english_name,sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform,cnr.hud_category FROM codexreport cr
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
         WHERE hud_category not in ('Tourist','Geology') and english_name not like '%%Barnacle Barbs%%'
+        union
+        SELECT '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,bodyName,-1,'Nonhuman Signature','Thargoid', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid'
+        FROM raw_events
+        WHERE raw_event LIKE '%POIScene_Wreckage_UA%'
         ORDER BY created_at asc
     """
     cursor.execute(sql, ())
@@ -637,36 +641,41 @@ def write_file(id, name, description, count):
 def histogram_data(data, cols):
     # find max and min
     retval = []
-    #ndata=(filter(lambda x: x is not None, data))
-    # print(ndata)
-    #a = min(ndata)
-    #z = max(ndata)
-    a = min(filter(lambda x: x is not None, data)) if any(data) else None
-    z = max(filter(lambda x: x is not None, data)) if any(data) else None
-    ndata = list(filter(lambda x: x is not None, data)) if any(data) else None
-    # get distance between them
-    w = z-a
-    # increment is the distance / columns
-    i = w/cols
+    try:
+        #ndata=(filter(lambda x: x is not None, data))
+        # print(ndata)
+        #a = min(ndata)
+        #z = max(ndata)
+        a = min(filter(lambda x: x is not None, data)) if any(data) else None
+        z = max(filter(lambda x: x is not None, data)) if any(data) else None
+        ndata = list(filter(lambda x: x is not None, data)
+                     ) if any(data) else None
+        # get distance between them
+        w = z-a
+        # increment is the distance / columns
+        i = w/cols
 
-    print(ndata)
-    print(f"{a} {z} {w} {i}")
-    for col in range(0, cols):
-        column = {}
-        zlist = list(filter(lambda x: a+(col*i) <=
-                     x and x <= a+(col*i)+i, ndata))
-        v = len(list(filter(lambda x: a+(col*i) <= x and x <= a+(col*i)+i, ndata)))
-        print(f"{w} {v} {col*i} {(col*i)+i} {ndata} {zlist}")
-        if v:
+        print(ndata)
+        print(f"{a} {z} {w} {i}")
+        for col in range(0, cols):
+            column = {}
+            zlist = list(filter(lambda x: a+(col*i) <=
+                                x and x <= a+(col*i)+i, ndata))
+            v = len(list(filter(lambda x: a+(col*i) <=
+                    x and x <= a+(col*i)+i, ndata)))
+            print(f"{w} {v} {col*i} {(col*i)+i} {ndata} {zlist}")
+            if v:
 
-            column = {
-                "min": a+(col*i),
-                "max": a+(col*i)+i,
-                # count values between max and min
-                "value": v
-            }
+                column = {
+                    "min": a+(col*i),
+                    "max": a+(col*i)+i,
+                    # count values between max and min
+                    "value": v
+                }
 
-        retval.append(column)
+            retval.append(column)
+    except:
+        print(f"Error: {data}")
 
     return retval
 
