@@ -125,7 +125,7 @@ def get_codex_data():
                 data[system]["bodies"][body]["entries"][entryid] = {}
 
         # at this point we have a system and a body but the category won't exist
-            print(f"{row.get('name')} {body}")
+            #print(f"{row.get('name')} {body}")
             data[system]["bodies"][body]["entries"][entryid] = {
                 "reported_at": row.get("reported_at"),
                 "cmdrname": row.get("cmdrname"),
@@ -655,15 +655,15 @@ def histogram_data(data, cols):
         # increment is the distance / columns
         i = w/cols
 
-        print(ndata)
-        print(f"{a} {z} {w} {i}")
+        # print(ndata)
+        #print(f"{a} {z} {w} {i}")
         for col in range(0, cols):
             column = {}
             zlist = list(filter(lambda x: a+(col*i) <=
                                 x and x <= a+(col*i)+i, ndata))
             v = len(list(filter(lambda x: a+(col*i) <=
                     x and x <= a+(col*i)+i, ndata)))
-            print(f"{w} {v} {col*i} {(col*i)+i} {ndata} {zlist}")
+            #print(f"{w} {v} {col*i} {(col*i)+i} {ndata} {zlist}")
             if v:
 
                 column = {
