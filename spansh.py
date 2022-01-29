@@ -80,7 +80,6 @@ def get_codex_data():
         SELECT cr.name,cast(reported_at as char) as reported_at,system,body,cr.entryid,english_name,sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform,cnr.hud_category FROM codexreport cr
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
         WHERE hud_category not in ('Tourist','Geology') and english_name not like '%%Barnacle Barbs%%'
-        ORDER BY 2 asc
         union
         SELECT '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,bodyName,-1,'Nonhuman Signature','Thargoid', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid'
         FROM raw_events
