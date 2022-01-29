@@ -644,14 +644,17 @@ def histogram_data(data, cols):
 
     retval = []
 
-    for col in range(1, cols):
-        column = {
-            "min": col*i,
-            "max": (col*i)+i,
-            # count values between max and min
-            "value":  ((col*i <= data) & (data <= (col*i)+i)).sum()
-        }
-        retval.append(column)
+    if a and b:
+
+        for col in range(1, cols):
+            column = {
+                "min": col*i,
+                "max": (col*i)+i,
+                # count values between max and min
+                "value":  ((col*i <= data) & (data <= (col*i)+i)).sum()
+            }
+            retval.append(column)
+
     return retval
 
 
