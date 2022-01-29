@@ -661,14 +661,14 @@ def process_histograms():
     global codex
 
     for entry in histograms.keys():
-        biostats[codex.get("entryid")]["histograms"]["distance"] = histogram_data(
-            histograms[codex.get("entryid")]["dist"], 12)
-        biostats[codex.get("entryid")]["histograms"]["gravity"] = histogram_data(
-            histograms[codex.get("entryid")]["grav"], 12)
-        biostats[codex.get("entryid")]["histograms"]["temperature"] = histogram_data(
-            histograms[codex.get("entryid")]["temp"], 12)
-        biostats[codex.get("entryid")]["histograms"]["pressure"] = histogram_data(
-            histograms[codex.get("entryid")]["pres"], 12)
+        biostats[entry]["histograms"]["distance"] = histogram_data(
+            histograms[entry]["dist"], 12)
+        biostats[entry]["histograms"]["gravity"] = histogram_data(
+            histograms[entry]["grav"], 12)
+        biostats[entry]["histograms"]["temperature"] = histogram_data(
+            histograms[entry]["temp"], 12)
+        biostats[entry]["histograms"]["pressure"] = histogram_data(
+            histograms[entry]["pres"], 12)
 
 
 process_histograms()
