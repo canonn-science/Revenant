@@ -421,7 +421,8 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
                 refloat(distanceToArrival))
             histograms[codex.get("entryid")]["grav"].append(refloat(grav))
             histograms[codex.get("entryid")]["temp"].append(refloat(temp))
-            histograms[codex.get("entryid")]["pres"].append(refloat(pressure))
+            histograms[codex.get("entryid")]["pres"].append(
+                (refloat(pressure) or 0))
 
             biostats[codex.get("entryid")]["histograms"]["body_types"][bodytype] = increment(
                 biostats[codex.get("entryid")]["histograms"]["body_types"].get(bodytype))
@@ -635,25 +636,37 @@ def write_file(id, name, description, count):
 
 def histogram_data(data, cols):
     # find max and min
-    a = min(data)
-    z = max(data)
+    retval = []
+    #ndata=(filter(lambda x: x is not None, data))
+    # print(ndata)
+    #a = min(ndata)
+    #z = max(ndata)
+    a = min(filter(lambda x: x is not None, data)) if any(data) else None
+    z = max(filter(lambda x: x is not None, data)) if any(data) else None
+    ndata = list(filter(lambda x: x is not None, data)) if any(data) else None
     # get distance between them
     w = z-a
     # increment is the distance / columns
     i = w/cols
 
-    retval = []
+    print(ndata)
+    print(f"{a} {z} {w} {i}")
+    for col in range(0, cols):
+        column = {}
+        zlist = list(filter(lambda x: a+(col*i) <=
+                     x and x <= a+(col*i)+i, ndata))
+        v = len(list(filter(lambda x: a+(col*i) <= x and x <= a+(col*i)+i, ndata)))
+        print(f"{w} {v} {col*i} {(col*i)+i} {ndata} {zlist}")
+        if v:
 
-    if a and b:
-
-        for col in range(1, cols):
             column = {
-                "min": col*i,
-                "max": (col*i)+i,
+                "min": a+(col*i),
+                "max": a+(col*i)+i,
                 # count values between max and min
-                "value":  ((col*i <= data) & (data <= (col*i)+i)).sum()
+                "value": v
             }
-            retval.append(column)
+
+        retval.append(column)
 
     return retval
 
