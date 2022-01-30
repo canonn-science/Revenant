@@ -340,7 +340,7 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
         for mat in mats.keys():
             biostats[codex.get("entryid")]["histograms"]["materials"][mat] = 1
     if types:
-        for type in types.keys():
+        for type in types:
             biostats[codex.get("entryid")
                      ]["histograms"]["system_bodies"][type] = 1
 
@@ -449,7 +449,7 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
                     biostats[codex.get("entryid")]["histograms"]["materials"].get(mat))
 
         if types:
-            for type in types.keys():
+            for type in types:
                 biostats[codex.get("entryid")]["histograms"]["materials"][type] = increment(
                     biostats[codex.get("entryid")]["histograms"]["materials"].get(type))
 
