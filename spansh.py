@@ -84,6 +84,43 @@ def get_codex_data():
         SELECT '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,bodyName,-1,'Nonhuman Signature','Thargoid', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid'
         FROM raw_events
         WHERE raw_event LIKE '%%POIScene_Wreckage_UA%%'
+        union 
+                 SELECT cr.name,cast(reported_at as char) as reported_at,system,body,
+			case 
+				when raw_json->"$.NearestDestination" like '%%Ancient_Medium_001%%' then -10
+                when raw_json->"$.NearestDestination" like '%%Ancient_Medium_002%%' then -11
+				when raw_json->"$.NearestDestination" like '%%Ancient_Medium_003%%' then -12
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_001%%' then -13
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_002%%' then -14
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_003%%' then -15
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_004%%' then -16
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_005%%' then -17
+				when raw_json->"$.NearestDestination" like '%%Ancient_Tiny_001%%' then -18
+				when raw_json->"$.NearestDestination" like '%%Ancient_Tiny_002%%' then -19
+				when raw_json->"$.NearestDestination" like '%%Ancient_Tiny_003%%' then -20
+				when raw_json->"$.NearestDestination" like '%%Ancient:#index%%' then -21
+                when raw_json->"$.NearestDestination" like '%%Ancient Ruins%%' then -21
+				else -22
+			end as entryid,
+			case 
+				when raw_json->"$.NearestDestination" like '%%Ancient_Medium_001%%' then 'Guardian Site - Robolobster'
+				when raw_json->"$.NearestDestination" like '%%Ancient_Medium_002%%' then 'Guardian Site - Squid'
+				when raw_json->"$.NearestDestination" like '%%Ancient_Medium_003%%' then 'Guardian Site - Stickyhand'
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_001%%' then 'Guardian Site - Hammerbot'
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_002%%' then 'Guardian Site - Bear'
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_003%%' then 'Guardian Site - Bowl'
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_004%%' then 'Guardian Site - Unknown'				
+				when raw_json->"$.NearestDestination" like '%%Ancient_Small_005%%' then 'Guardian Site - Turtle'				
+				when raw_json->"$.NearestDestination" like '%%Ancient_Tiny_001%%' then 'Guardian Site - Lacrosse'
+				when raw_json->"$.NearestDestination" like '%%Ancient_Tiny_002%%' then 'Guardian Site - Crossroads'
+				when raw_json->"$.NearestDestination" like '%%Ancient_Tiny_003%%' then 'Guardian Site - Fistbump'				
+				when raw_json->"$.NearestDestination" like '%%Ancient:#index%%' then 'Guardian Ruins'			
+                when raw_json->"$.NearestDestination" like '%%Ancient Ruins%%' then 'Guardian Ruins'                
+				else 'Guardian Location - Unknown'
+			end as english_name,
+			sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform,cnr.hud_category FROM codexreport cr
+        LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
+        WHERE hud_category = 'Guardian' and raw_json->"$.NearestDestination" like '%%Ancient%%'
         ORDER BY 2 asc
     """
     cursor.execute(sql, ())
