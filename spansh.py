@@ -339,6 +339,10 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
             mats.keys())
         for mat in mats.keys():
             biostats[codex.get("entryid")]["histograms"]["materials"][mat] = 1
+    if types:
+        for type in types.keys():
+            biostats[codex.get("entryid")
+                     ]["histograms"]["system_bodies"][type] = 1
 
 
 def smin(a, b):
@@ -443,6 +447,11 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
             for mat in mats.keys():
                 biostats[codex.get("entryid")]["histograms"]["materials"][mat] = increment(
                     biostats[codex.get("entryid")]["histograms"]["materials"].get(mat))
+
+        if types:
+            for type in types.keys():
+                biostats[codex.get("entryid")]["histograms"]["materials"][type] = increment(
+                    biostats[codex.get("entryid")]["histograms"]["materials"].get(type))
 
     else:
         initStats(codex, grav, temp, atmo, bodytype, star, parentstar,
@@ -662,7 +671,7 @@ def histogram_data(data, cols):
             zlist = list(filter(lambda x: a+(col*i) <=
                                 x and x <= a+(col*i)+i, ndata))
             v = len(list(filter(lambda x: a+(col*i) <=
-                    x and x <= a+(col*i)+i, ndata)))
+                                x and x <= a+(col*i)+i, ndata)))
             #print(f"{w} {v} {col*i} {(col*i)+i} {ndata} {zlist}")
             if v:
 
