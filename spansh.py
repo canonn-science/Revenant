@@ -488,8 +488,8 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
 
         if types:
             for type in types:
-                biostats[codex.get("entryid")]["histograms"]["materials"][type] = increment(
-                    biostats[codex.get("entryid")]["histograms"]["materials"].get(type))
+                biostats[codex.get("entryid")]["histograms"]["system_bodies"][type] = increment(
+                    biostats[codex.get("entryid")]["histograms"]["system_bodies"].get(type))
 
     else:
         initStats(codex, grav, temp, atmo, bodytype, star, parentstar,
