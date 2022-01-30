@@ -306,6 +306,7 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
     biostats[codex.get("entryid")]["histograms"]["atmos_types"] = {}
     biostats[codex.get("entryid")]["histograms"]["local_stars"] = {}
     biostats[codex.get("entryid")]["histograms"]["materials"] = {}
+    biostats[codex.get("entryid")]["histograms"]["system_bodies"] = {}
 
     if bodytype is not None:
         histograms[codex.get("entryid")] = {
