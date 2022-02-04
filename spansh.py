@@ -12,6 +12,7 @@ from google.oauth2 import service_account
 from googleapiclient import discovery
 from revenant import write_sheet
 import string
+import requests
 
 sys.path.append('EliteDangerousRegionMap')
 
@@ -743,7 +744,18 @@ def process_histograms():
             histograms[entry]["pres"], 12)
 
 
+def add_prices():
+    global biostats
+    r = requests.get(
+        "https://us-central1-canonn-api-236217.cloudfunctions.net/query/codex/ref")
+    entries = r.json()
+    for key in entries.keys():
+        if biostats.get(key):
+            biostats[key]["reward"] = entries.get(key).get("reward")
+
+
 process_histograms()
+add_prices()
 
 with open('biostats2.json', 'w') as f:
     json.dump(biostats, f,  iterable_as_array=True)
