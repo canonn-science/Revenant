@@ -749,9 +749,16 @@ def add_prices():
     r = requests.get(
         "https://us-central1-canonn-api-236217.cloudfunctions.net/query/codex/ref")
     entries = r.json()
-    for key in entries.keys():
-        if biostats.get(key):
-            biostats[key]["reward"] = entries.get(key).get("reward")
+    #print(f"bio keys = {biostats.keys()}")
+    #print(f"entry keys = {entries.keys()}")
+
+    for key in biostats.keys():
+        print(f"key = {key}")
+        if entries.get(str(key())):
+            biostats[key]["reward"] = entries.get(str(key)).get("reward")
+        else:
+            print(
+                f"biostats {biostats.get(key)} entry {entries.get(str(key))}")
 
 
 process_histograms()
