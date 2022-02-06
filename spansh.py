@@ -754,7 +754,7 @@ def add_prices():
 
     for key in biostats.keys():
         print(f"key = {key}")
-        if entries.get(str(key())):
+        if entries.get(str(key)):
             biostats[key]["reward"] = entries.get(str(key)).get("reward")
         else:
             print(
