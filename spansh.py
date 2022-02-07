@@ -82,7 +82,7 @@ def get_codex_data():
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
         WHERE hud_category not in ('Tourist','Geology') and english_name not like '%%Barnacle Barbs%%'
         union
-        SELECT distinct '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,replace(raw_event->"$.Body",'"','') as bodyName,-1,'Nonhuman Signature','Thargoid', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid',raw_event
+        SELECT distinct '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,replace(raw_event->"$.Body",'"','') as bodyName,-1,'Nonhuman Signature','Thargoid', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid'
         FROM raw_events
         WHERE raw_event LIKE '%%POIScene_Wreckage_UA%%'
         union 
