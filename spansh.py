@@ -84,7 +84,7 @@ def get_codex_data():
         union
         SELECT distinct '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,replace(raw_event->"$.Body",'"','') as bodyName,-1,'Nonhuman Signature','Thargoid', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid',raw_event
         FROM raw_events
-        WHERE raw_event LIKE '%POIScene_Wreckage_UA%%'
+        WHERE raw_event LIKE '%%POIScene_Wreckage_UA%%'
         union 
                  SELECT cr.name,cast(reported_at as char) as reported_at,system,body,
 			case 
