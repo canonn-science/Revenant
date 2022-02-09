@@ -82,7 +82,7 @@ def get_codex_data():
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
         WHERE hud_category not in ('Tourist','Geology') and english_name not like '%%Barnacle Barbs%%'
         union
-        SELECT distinct '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,replace(raw_event->"$.Body",'"','') as bodyName,-1,'Nonhuman Signature','Thargoid', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid'
+        SELECT distinct '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,replace(raw_event->"$.Body",'"','') as bodyName,-1,'Nonhuman Signature','Nonhuman Signatures', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid'
         FROM raw_events
         WHERE raw_event LIKE '%%POIScene_Wreckage_UA%%'
         union 
@@ -508,8 +508,14 @@ def store_non_body_codex(system):
 
     if codex_data.get(system.get("name")) and codex_data.get(system.get("name")).get("bodies") and codex_data.get(system.get("name")).get("bodies").get("None"):
 
-        for key, entry in codex_data[system.get("name")]["bodies"]["None"]["entries"].items():
+        for key in codex_data[system.get("name")]["bodies"]["None"]["entries"].keys():
             # print(entry.get("english_name"))
+            entry = codex_data[system.get(
+                "name")]["bodies"]["None"]["entries"][key]
+            name = entry.get("english_name")
+            if entryid == -1 or entryid == "-1":
+                print(f"{name} {region}")
+
             gatherStats(
                 entry,
                 None, None, None, None,
@@ -598,6 +604,9 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                             gravity = b.get("gravity")
                             surfaceTemperature = b.get("surfaceTemperature")
                             body_types = get_sub_types(j)
+
+                            if entryid == -1 or entryid == "-1":
+                                print(f"{name} {region}")
 
                             gatherStats(
                                 entry,
@@ -781,6 +790,17 @@ def biosheet(type):
     except:
         print(f"sheet {type} doesn't exist")
 
+
+def thargsheet(type):
+    cells = []
+    cells.append(HEADERS)
+    cells.extend(classes.get(type))
+    try:
+        SHEET = "1YgQYFYBLXz_t9wBG-kN-y4AZjYsVX2hof_t8jI8vFGQ"
+        write_sheet(SHEET, f"{type}!A1:Z", cells)
+    except:
+        print(f"sheet {type} doesn't exist")
+
 # for genus in classes.keys():
 #    biosheet(genus)
 
@@ -803,6 +823,7 @@ biosheet("Shrubs")
 biosheet("Stratum")
 biosheet("Tubus")
 biosheet("Tussocks")
+thargsheet("Nonhuman Signatures")
 
 all_bio = []
 all_bio.append(HEADERS)
