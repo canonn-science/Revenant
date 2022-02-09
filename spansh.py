@@ -305,7 +305,7 @@ This will need to be modified to cope with no body codex entries
 """
 
 
-def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
+def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
     global biostats
     global histograms
 
@@ -318,7 +318,7 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
         "count": 1,
         "id": codex.get("name"),
         "platform": codex.get("platform"),
-        "bodies": set([bodytype]),
+        "bodies": set(),
         "ming": refloat(grav),
         "maxg": refloat(grav),
         "mint": refloat(temp),
@@ -327,11 +327,11 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
         "maxp": refloat(pressure),
         "mind": refloat(distanceToArrival),
         "maxd": refloat(distanceToArrival),
-        "atmosphereType": set([atmo]),
+        "atmosphereType": set(),
         "primaryStars": set([star]),
-        "localStars": set([parentstar]),
+        "localStars": set(),
         "regions": set([region]),
-        "volcanism": set([volcanism]),
+        "volcanism": set(),
         "solidComposition": set(),
         "atmosComposition": set(),
         "materials": set(),
@@ -346,7 +346,13 @@ def initStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, sol
     biostats[codex.get("entryid")]["histograms"]["materials"] = {}
     biostats[codex.get("entryid")]["histograms"]["system_bodies"] = {}
 
-    if bodytype is not None:
+    if body != "None":
+
+        biostats[codex.get("entryid")]["atmosphereType"].add(atmo)
+        biostats[codex.get("entryid")]["localStars"].add(parentstar)
+        biostats[codex.get("entryid")]["volcanism"].add(volcanism)
+        biostats[codex.get("entryid")]["bodies"].add(bodytype)
+
         histograms[codex.get("entryid")] = {
             "dist": [refloat(distanceToArrival)],
             "grav": [refloat(grav)],
@@ -411,7 +417,7 @@ This will need to be modified to cope with no body codex entries
 """
 
 
-def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
+def gatherStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types):
     global biostats
 
     if volcanism is None and bodyType is not None:
@@ -420,7 +426,7 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
         atmo = "No atmosphere"
 
     if biostats.get(codex.get("entryid")):
-        if bodytype is not None:
+        if body != "None":
             biostats[codex.get("entryid")]["bodies"].add(bodytype)
             biostats[codex.get("entryid")]["ming"] = smin(
                 refloat(grav), biostats[codex.get("entryid")]["ming"])
@@ -463,7 +469,7 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
             biostats[codex.get("entryid")]["materials"] = biostats[codex.get(
                 "entryid")]["materials"].intersection(set(mats.keys()))
 
-        if bodyType is not None:
+        if body != "None":
             histograms[codex.get("entryid")]["dist"].append(
                 refloat(distanceToArrival))
             histograms[codex.get("entryid")]["grav"].append(refloat(grav))
@@ -493,7 +499,7 @@ def gatherStats(codex, grav, temp, atmo, bodytype, star, parentstar, pressure, s
                     biostats[codex.get("entryid")]["histograms"]["system_bodies"].get(type))
 
     else:
-        initStats(codex, grav, temp, atmo, bodytype, star, parentstar,
+        initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar,
                   pressure, solidComp, atmoComp, mats, region, distanceToArrival, volcanism, types)
     # print(biostats.get(codex.get("entryid")))
 
@@ -517,6 +523,7 @@ def store_non_body_codex(system):
                 print(f"{name} {region}")
 
             gatherStats(
+                "None",
                 entry,
                 None, None, None, None,
                 star,
@@ -609,6 +616,7 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                                 print(f"{name} {region}")
 
                             gatherStats(
+                                body,
                                 entry,
                                 gravity,
                                 surfaceTemperature,
