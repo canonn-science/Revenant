@@ -218,10 +218,19 @@ def get_sub_types(system):
         types.add(body.get("subType"))
     return types
 
+def mismatched_body(system,b):
+    has_signal=(b.get("signals") and b.get("signals").get("signals") and b.get("signals").get("signals").get("$SAA_SignalType_Biological;"))
+    has_codex=(b.get("codex"))
+
+    if has_codex and not has_signal:
+        name=b.get("name")
+        
+        print(f"Missing Body: {system} {name}")
 
 def record_bio(j):
     bodycount = 0
     for b in j.get("bodies"):
+        mismatched_body(j.get("name"),b)
         try:
             if b.get("signals").get("signals").get("$SAA_SignalType_Biological;") or b.get("codex"):
                 bodycount = bodycount+1
@@ -315,6 +324,7 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
     biostats[codex.get("entryid")] = {
         "name": codex.get("english_name"),
         "hud_category": codex.get("hud_category"),
+        "fdevname": codex.get("name"),
         "count": 1,
         "id": codex.get("name"),
         "platform": codex.get("platform"),
