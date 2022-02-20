@@ -218,19 +218,22 @@ def get_sub_types(system):
         types.add(body.get("subType"))
     return types
 
-def mismatched_body(system,b):
-    has_signal=(b.get("signals") and b.get("signals").get("signals") and b.get("signals").get("signals").get("$SAA_SignalType_Biological;"))
-    has_codex=(b.get("codex"))
+
+def mismatched_body(system, b):
+    has_signal = (b.get("signals") and b.get("signals").get("signals") and b.get(
+        "signals").get("signals").get("$SAA_SignalType_Biological;"))
+    has_codex = (b.get("codex"))
 
     if has_codex and not has_signal:
-        name=b.get("name")
-        
-        print(f"Missing Body: {system} {name}")
+        name = b.get("name")
+
+        print(f"Missing Body: {system} {name}", flush=True)
+
 
 def record_bio(j):
     bodycount = 0
     for b in j.get("bodies"):
-        mismatched_body(j.get("name"),b)
+        mismatched_body(j.get("name"), b)
         try:
             if b.get("signals").get("signals").get("$SAA_SignalType_Biological;") or b.get("codex"):
                 bodycount = bodycount+1
@@ -267,7 +270,7 @@ def get_parent_type(system, body):
                 if b.get("bodyId") == pid:
                     return b.get("subType")
     else:
-        print(f"{bodyName} has no parents")
+        print(f"{bodyName} has no parents", flush=True)
 
     if bodyName == systemName or shortName[0] in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
         return get_primary_star(system)
@@ -280,8 +283,9 @@ def get_parent_type(system, body):
             return b.get("subType")
 
 
+print("Getting data", flush=True)
 codex_data = get_codex_data()
-print("done getting data")
+print("done getting data", flush=True)
 
 output_data = []
 # print(json.dumps(codex_data, indent=4))
@@ -530,7 +534,7 @@ def store_non_body_codex(system):
                 "name")]["bodies"]["None"]["entries"][key]
             name = entry.get("english_name")
             if entryid == -1 or entryid == "-1":
-                print(f"{name} {region}")
+                print(f"{name} {region}", flush=True)
 
             gatherStats(
                 "None",
@@ -623,7 +627,7 @@ with gzip.open(os.path.join(home, 'spansh', 'galaxy.json.gz'), "rt") as f:
                             body_types = get_sub_types(j)
 
                             if entryid == -1 or entryid == "-1":
-                                print(f"{name} {region}")
+                                print(f"{name} {region}", flush=True)
 
                             gatherStats(
                                 body,
@@ -710,7 +714,7 @@ def write_file(id, name, description, count):
     media = MediaFileUpload(name, mimetype='application/json')
     file = drive.files().update(body=file_metadata, media_body=media,
                                 fields='id', fileId=id).execute()
-    print('Upload {} File ID: {}'.format(name, file.get('id')))
+    print('Upload {} File ID: {}'.format(name, file.get('id')), flush=True)
 
 
 def histogram_data(data, cols):
@@ -750,7 +754,7 @@ def histogram_data(data, cols):
 
             retval.append(column)
     except:
-        print(f"Error: {data}")
+        print(f"Error: {data}", flush=True)
 
     return retval
 
@@ -806,7 +810,7 @@ def biosheet(type):
         BIOSHEET = "15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
         write_sheet(BIOSHEET, f"{type}!A1:Z", cells)
     except:
-        print(f"sheet {type} doesn't exist")
+        print(f"sheet {type} doesn't exist", flush=True)
 
 
 def thargsheet(type):
@@ -817,7 +821,7 @@ def thargsheet(type):
         SHEET = "1YgQYFYBLXz_t9wBG-kN-y4AZjYsVX2hof_t8jI8vFGQ"
         write_sheet(SHEET, f"{type}!A1:Z", cells)
     except:
-        print(f"sheet {type} doesn't exist")
+        print(f"sheet {type} doesn't exist", flush=True)
 
 # for genus in classes.keys():
 #    biosheet(genus)
