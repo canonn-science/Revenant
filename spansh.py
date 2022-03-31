@@ -13,6 +13,7 @@ from googleapiclient import discovery
 from revenant import write_sheet
 import string
 import requests
+from datetime import datetime as dt
 
 sys.path.append('EliteDangerousRegionMap')
 
@@ -81,11 +82,11 @@ def get_codex_data():
         SELECT cr.name,cast(reported_at as char) as reported_at,system,body,cr.entryid,english_name,sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform,cnr.hud_category FROM codexreport cr
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
         WHERE hud_category not in ('Tourist','Geology') and english_name not like '%%Barnacle Barbs%%'
-        union
+        union all
         SELECT distinct '$POIScene_Wreckage_UA;', CAST(created_at AS CHAR),systemName,replace(raw_event->"$.Body",'"','') as bodyName,-1,'Nonhuman Signature','Nonhuman Signatures', raw_event->"$.SystemAddress" AS systemaddress,cmdrname,'odyssey','Thargoid'
         FROM raw_events
-        WHERE raw_event LIKE '%%POIScene_Wreckage_UA%%'
-        union 
+        WHERE raw_event LIKE '%%POIScene_Wreckage_UA%%' and event in ('Touchdown','Liftoff')
+        union all
                  SELECT cr.name,cast(reported_at as char) as reported_at,system,body,
 			case 
 				when raw_json->"$.NearestDestination" like '%%Ancient_Medium_001%%' then -10
@@ -122,7 +123,6 @@ def get_codex_data():
 			sub_class,IFNULL(id64 ,raw_json->"$.SystemAddress") AS systemaddress,cmdrname,cnr.platform,cnr.hud_category FROM codexreport cr
         LEFT JOIN codex_name_ref cnr ON cnr.entryid = cr.entryid
         WHERE hud_category = 'Guardian' and raw_json->"$.NearestDestination" like '%%Ancient%%'
-        ORDER BY 2 asc
     """
     cursor.execute(sql, ())
 
@@ -174,7 +174,28 @@ def get_codex_data():
                 "entryid": row.get("entryid"),
             }
 
+        if oldest(row.get("reported_at"), data[system]["bodies"][body]["entries"][entryid]["reported_at"]):
+            print("replacing "+data[system]["bodies"][body]["entries"]
+                  [entryid]["reported_at"]+" with "+row.get("reported_at"), True)
+            data[system]["bodies"][body]["entries"][entryid] = {
+                "reported_at": row.get("reported_at"),
+                "cmdrname": row.get("cmdrname"),
+                "name": row.get("name"),
+                "english_name": row.get("english_name"),
+                "genus": row.get("sub_class"),
+                "hud_category": row.get("hud_category"),
+                "entryid": row.get("entryid"),
+            }
+        else:
+            print(".", True)
+
     return data
+
+
+def oldest(d1, d2):
+    a = dt.strptime(d1, "%Y-%m-%d %H:%M:%S")
+    b = dt.strptime(d2, "%Y-%m-%d %H:%M:%S")
+    return a < b
 
 
 def get_primary_star(system):
