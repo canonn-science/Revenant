@@ -354,6 +354,7 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
         "id": codex.get("name"),
         "platform": codex.get("platform"),
         "bodies": set(),
+        "volcanic_bodies": set(),
         "ming": refloat(grav),
         "maxg": refloat(grav),
         "mint": refloat(temp),
@@ -387,6 +388,7 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
         biostats[codex.get("entryid")]["localStars"].add(parentstar)
         biostats[codex.get("entryid")]["volcanism"].add(volcanism)
         biostats[codex.get("entryid")]["bodies"].add(bodytype)
+        biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + volcanism)
 
         histograms[codex.get("entryid")] = {
             "dist": [refloat(distanceToArrival)],
@@ -463,6 +465,7 @@ def gatherStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, press
     if biostats.get(codex.get("entryid")):
         if body != "None":
             biostats[codex.get("entryid")]["bodies"].add(bodytype)
+            biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + volcanism)
             biostats[codex.get("entryid")]["ming"] = smin(
                 refloat(grav), biostats[codex.get("entryid")]["ming"])
             biostats[codex.get("entryid")]["maxg"] = smax(
