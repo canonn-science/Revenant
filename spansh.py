@@ -465,7 +465,7 @@ def gatherStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, press
     if biostats.get(codex.get("entryid")):
         if body != "None" and bodytype:
             biostats[codex.get("entryid")]["bodies"].add(bodytype)
-            biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + (volcanism or "No ")
+            biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + (volcanism or "No Volcanism"))
             biostats[codex.get("entryid")]["ming"] = smin(
                 refloat(grav), biostats[codex.get("entryid")]["ming"])
             biostats[codex.get("entryid")]["maxg"] = smax(
