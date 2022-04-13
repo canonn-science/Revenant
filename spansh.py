@@ -382,7 +382,7 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
     biostats[codex.get("entryid")]["histograms"]["materials"] = {}
     biostats[codex.get("entryid")]["histograms"]["system_bodies"] = {}
 
-    if body != "None":
+    if body != "None" and bodytype:
 
         biostats[codex.get("entryid")]["atmosphereType"].add(atmo)
         biostats[codex.get("entryid")]["localStars"].add(parentstar)
@@ -463,9 +463,9 @@ def gatherStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, press
         atmo = "No atmosphere"
 
     if biostats.get(codex.get("entryid")):
-        if body != "None":
+        if body != "None" and bodytype:
             biostats[codex.get("entryid")]["bodies"].add(bodytype)
-            biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + (volcanism or "No Volcanism"))
+            biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + (volcanism or "No ")
             biostats[codex.get("entryid")]["ming"] = smin(
                 refloat(grav), biostats[codex.get("entryid")]["ming"])
             biostats[codex.get("entryid")]["maxg"] = smax(
