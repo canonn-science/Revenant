@@ -510,7 +510,7 @@ def gatherStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, press
             biostats[codex.get("entryid")]["materials"] = biostats[codex.get(
                 "entryid")]["materials"].intersection(set(mats.keys()))
 
-        if body != "None":
+        if body != "None" and bodytype:
             histograms[codex.get("entryid")]["dist"].append(
                 refloat(distanceToArrival))
             histograms[codex.get("entryid")]["grav"].append(refloat(grav))
