@@ -186,8 +186,7 @@ def get_codex_data():
                 "hud_category": row.get("hud_category"),
                 "entryid": row.get("entryid"),
             }
-        else:
-            print(".", True)
+
 
     return data
 
