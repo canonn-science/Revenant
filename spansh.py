@@ -354,7 +354,6 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
         "id": codex.get("name"),
         "platform": codex.get("platform"),
         "bodies": set(),
-        "volcanic_bodies": set(),
         "ming": refloat(grav),
         "maxg": refloat(grav),
         "mint": refloat(temp),
@@ -376,6 +375,7 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
 
     biostats[codex.get("entryid")]["histograms"] = {}
     biostats[codex.get("entryid")]["histograms"]["body_types"] = {}
+    biostats[codex.get("entryid")]["histograms"]["volcanic_body_types"] = {}
     biostats[codex.get("entryid")]["histograms"]["primary_stars"] = {}
     biostats[codex.get("entryid")]["histograms"]["atmos_types"] = {}
     biostats[codex.get("entryid")]["histograms"]["local_stars"] = {}
@@ -388,7 +388,6 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
         biostats[codex.get("entryid")]["localStars"].add(parentstar)
         biostats[codex.get("entryid")]["volcanism"].add(volcanism)
         biostats[codex.get("entryid")]["bodies"].add(bodytype)
-        biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + (volcanism or "No Volcanism"))
 
         histograms[codex.get("entryid")] = {
             "dist": [refloat(distanceToArrival)],
@@ -398,6 +397,11 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
         }
         biostats[codex.get("entryid")
                  ]["histograms"]["body_types"][bodytype] = 1
+
+        volcanicbodytype=bodytype + " - " + (volcanism or "No volcanism")         
+        biostats[codex.get("entryid")
+                 ]["histograms"]["volcanic_body_types"][volcanicbodytype] = 1         
+
         biostats[codex.get("entryid")]["histograms"]["primary_stars"][star] = 1
         biostats[codex.get("entryid")]["histograms"]["atmos_types"][atmo] = 1
         biostats[codex.get("entryid")
@@ -465,7 +469,7 @@ def gatherStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, press
     if biostats.get(codex.get("entryid")):
         if body != "None" and bodytype:
             biostats[codex.get("entryid")]["bodies"].add(bodytype)
-            biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + (volcanism or "No Volcanism"))
+            #biostats[codex.get("entryid")]["volcanic_bodies"].add(bodytype + " " + (volcanism or "No Volcanism"))
             biostats[codex.get("entryid")]["ming"] = smin(
                 refloat(grav), biostats[codex.get("entryid")]["ming"])
             biostats[codex.get("entryid")]["maxg"] = smax(
@@ -514,6 +518,10 @@ def gatherStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, press
             histograms[codex.get("entryid")]["temp"].append(refloat(temp))
             histograms[codex.get("entryid")]["pres"].append(
                 (refloat(pressure) or 0))
+
+            volcanicbodytype=bodytype + " - " + (volcanism or "No volcanism")
+            biostats[codex.get("entryid")]["histograms"]["volcanic_body_types"][volcanicbodytype] = increment(
+                biostats[codex.get("entryid")]["histograms"]["volcanic_body_types"].get(volcanicbodytype))
 
             biostats[codex.get("entryid")]["histograms"]["body_types"][bodytype] = increment(
                 biostats[codex.get("entryid")]["histograms"]["body_types"].get(bodytype))
@@ -871,10 +879,10 @@ biosheet("Tubus")
 biosheet("Tussocks")
 thargsheet("Nonhuman Signatures")
 
-all_bio = []
-all_bio.append(HEADERS)
-for c in classes.keys():
-    all_bio.extend(classes.get(c))
+#all_bio = []
+#all_bio.append(HEADERS)
+#for c in classes.keys():
+#    all_bio.extend(classes.get(c))
 
-BIOSHEET2 = "1x5vWnq-MON40uswkNmZpyVEarr9a3mEmZUk9dxo9KJo"
-write_sheet(BIOSHEET2, "All Biology!A1:Z", all_bio)
+#BIOSHEET2 = "1x5vWnq-MON40uswkNmZpyVEarr9a3mEmZUk9dxo9KJo"
+#write_sheet(BIOSHEET2, "All Biology!A1:Z", all_bio)
