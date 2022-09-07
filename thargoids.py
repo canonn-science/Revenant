@@ -273,7 +273,7 @@ def merge_hd_data(hd_monitor, hd_detected):
 def get_locations(hd_detected):
     data = []
     header = ["Timestamp", "Commander", "System",
-              "x", "y", "z", "Destination", "x", "y", "z", "Jump Distance (ly)"]
+              "x", "y", "z", "Destination", "x", "y", "z", "Jump Distance (ly)","Hostile"]
     data.append(header)
     for rec in hd_detected:
         cols = []
@@ -293,7 +293,8 @@ def get_locations(hd_detected):
             cols.append(str(rec.get("dx")))
             cols.append(str(rec.get("dy")))
             cols.append(str(rec.get("dz")))
-            cols.append(str("distance"))
+            cols.append(str(distance))
+            cols.append(str(rec.get("hostile") or ""))
             data.append(cols)
     return data
 
@@ -305,7 +306,7 @@ hd_detected = get_hd_detected()
 hdcells = merge_hd_data(hd_monitor, hd_detected)
 
 write_sheet(THARGOID_SHEET, 'Hyperdictions!A2:Z', sorted(hdcells))
-write_sheet(THARGOID_SHEET, 'Hyperdiction Detections!A1:K',
+write_sheet(THARGOID_SHEET, 'Hyperdiction Detections!A1:Z',
             get_locations(hd_detected))
 write_sheet(THARGOID_SHEET, 'NHSS Locations!A1:R',
             get_nhss_reported())
