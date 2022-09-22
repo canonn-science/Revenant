@@ -851,8 +851,9 @@ def thargsheet(type):
     try:
         SHEET = "1YgQYFYBLXz_t9wBG-kN-y4AZjYsVX2hof_t8jI8vFGQ"
         write_sheet(SHEET, f"{type}!A1:Z", cells)
-    except:
+    except Exception as e:
         print(f"sheet {type} doesn't exist", flush=True)
+        print(e, flush=True)
 
 # for genus in classes.keys():
 #    biosheet(genus)
