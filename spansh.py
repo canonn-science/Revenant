@@ -187,7 +187,6 @@ def get_codex_data():
                 "entryid": row.get("entryid"),
             }
 
-
     return data
 
 
@@ -397,9 +396,9 @@ def initStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, pressur
         biostats[codex.get("entryid")
                  ]["histograms"]["body_types"][bodytype] = 1
 
-        volcanicbodytype=bodytype + " - " + (volcanism or "No volcanism")         
+        volcanicbodytype = bodytype + " - " + (volcanism or "No volcanism")
         biostats[codex.get("entryid")
-                 ]["histograms"]["volcanic_body_types"][volcanicbodytype] = 1         
+                 ]["histograms"]["volcanic_body_types"][volcanicbodytype] = 1
 
         biostats[codex.get("entryid")]["histograms"]["primary_stars"][star] = 1
         biostats[codex.get("entryid")]["histograms"]["atmos_types"][atmo] = 1
@@ -518,7 +517,7 @@ def gatherStats(body, codex, grav, temp, atmo, bodytype, star, parentstar, press
             histograms[codex.get("entryid")]["pres"].append(
                 (refloat(pressure) or 0))
 
-            volcanicbodytype=bodytype + " - " + (volcanism or "No volcanism")
+            volcanicbodytype = bodytype + " - " + (volcanism or "No volcanism")
             biostats[codex.get("entryid")]["histograms"]["volcanic_body_types"][volcanicbodytype] = increment(
                 biostats[codex.get("entryid")]["histograms"]["volcanic_body_types"].get(volcanicbodytype))
 
@@ -844,6 +843,18 @@ def biosheet(type):
         print(f"sheet {type} doesn't exist", flush=True)
 
 
+def speciessheet(type, sheet, name):
+    cells = []
+    cells.append(HEADERS)
+    for entry in classes.get(type):
+        if name in entry.get("english_name"):
+            cells.append(entry)
+    try:
+        write_sheet(sheet, f"{name}!A1:R", cells)
+    except:
+        print(f"sheet {name} doesn't exist", flush=True)
+
+
 def thargsheet(type):
     cells = []
     cells.append(HEADERS)
@@ -861,8 +872,46 @@ def thargsheet(type):
 
 #print(json.dumps(classes, indent=4))
 
-biosheet("Aleoids")
-biosheet("Bacterial")
+speciessheet(
+    "Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0", "Aleoida Arcus")
+speciessheet("Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0",
+             "Aleoida Coronamus")
+speciessheet(
+    "Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0", "Aleoida Spica")
+speciessheet("Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0",
+             "Aleoida Laminiae")
+speciessheet(
+    "Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0", "Aleoida Arcus")
+speciessheet(
+    "Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0", "Aleoida Gravis")
+
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Aurasus")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Nebulus")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Scopulum")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Acies")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Vesicula")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Alcyoneum")
+speciessheet(
+    "Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8", "Bacterium Tela")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Informem")
+speciessheet(
+    "Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8", "Bacterium Volu")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Bullaris")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Omentum")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Cerbrus")
+speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
+             "Bacterium Verrata")
+
 biosheet("Brain Tree")
 biosheet("Cactoid")
 biosheet("Clypeus")
@@ -880,8 +929,8 @@ biosheet("Tussocks")
 thargsheet("Nonhuman Signatures")
 
 #all_bio = []
-#all_bio.append(HEADERS)
-#for c in classes.keys():
+# all_bio.append(HEADERS)
+# for c in classes.keys():
 #    all_bio.extend(classes.get(c))
 
 #BIOSHEET2 = "1x5vWnq-MON40uswkNmZpyVEarr9a3mEmZUk9dxo9KJo"
