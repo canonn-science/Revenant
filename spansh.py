@@ -849,12 +849,13 @@ def speciessheet(type, sheet, name):
     cells.append(HEADERS)
 
     for entry in classes.get(type):
-        if name in classes.get(type)[1]:
+        if name in entry[1]:
             cells.append(entry)
     try:
         write_sheet(sheet, f"{name}!A1:R", cells)
-    except:
+    except Exception as e:
         print(f"sheet {name} doesn't exist", flush=True)
+        print(e, flush=True)
 
 
 def thargsheet(type):
@@ -868,66 +869,143 @@ def thargsheet(type):
         print(f"sheet {type} doesn't exist", flush=True)
         print(e, flush=True)
 
+
+def populate_species(type, sheet, species):
+    for s in species:
+        speciessheet(type, sheet, s)
+
 # for genus in classes.keys():
 #    biosheet(genus)
 
 
 #print(json.dumps(classes, indent=4))
 
-speciessheet(
-    "Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0", "Aleoida Arcus")
-speciessheet("Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0",
-             "Aleoida Coronamus")
-speciessheet(
-    "Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0", "Aleoida Spica")
-speciessheet("Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0",
-             "Aleoida Laminiae")
-speciessheet(
-    "Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0", "Aleoida Arcus")
-speciessheet(
-    "Aleoids", "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0", "Aleoida Gravis")
+aleoids = "1j_9QgEkRmt5PzJtUGz52lWAr2MRJxTXnhuY1ahW9jr0"
+speciessheet("Aleoids", aleoids, "Aleoida Arcus")
+speciessheet("Aleoids", aleoids, "Aleoida Coronamus")
+speciessheet("Aleoids", aleoids, "Aleoida Spica")
+speciessheet("Aleoids", aleoids, "Aleoida Laminiae")
+speciessheet("Aleoids", aleoids, "Aleoida Arcus")
+speciessheet("Aleoids", aleoids, "Aleoida Gravis")
 
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Aurasus")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Nebulus")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Scopulum")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Acies")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Vesicula")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Alcyoneum")
-speciessheet(
-    "Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8", "Bacterium Tela")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Informem")
-speciessheet(
-    "Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8", "Bacterium Volu")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Bullaris")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Omentum")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Cerbrus")
-speciessheet("Bacterial", "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8",
-             "Bacterium Verrata")
+bacteria = "1ACjMbZOTUCaSeO_mClq-cfZc8Kzqfbfa454JOHZFKS8"
+speciessheet("Bacterial", bacteria, "Bacterium Aurasus")
+speciessheet("Bacterial", bacteria, "Bacterium Nebulus")
+speciessheet("Bacterial", bacteria, "Bacterium Scopulum")
+speciessheet("Bacterial", bacteria, "Bacterium Acies")
+speciessheet("Bacterial", bacteria, "Bacterium Vesicula")
+speciessheet("Bacterial", bacteria, "Bacterium Alcyoneum")
+speciessheet("Bacterial", bacteria, "Bacterium Tela")
+speciessheet("Bacterial", bacteria, "Bacterium Informem")
+speciessheet("Bacterial", bacteria, "Bacterium Volu")
+speciessheet("Bacterial", bacteria, "Bacterium Bullaris")
+speciessheet("Bacterial", bacteria, "Bacterium Omentum")
+speciessheet("Bacterial", bacteria, "Bacterium Cerbrus")
+speciessheet("Bacterial", bacteria, "Bacterium Verrata")
 
 biosheet("Brain Tree")
-biosheet("Cactoid")
-biosheet("Clypeus")
-biosheet("Conchas")
-biosheet("Electricae")
-biosheet("Fonticulus")
-biosheet("Fumerolas")
-biosheet("Fungoids")
-biosheet("Osseus")
-biosheet("Recepta")
-biosheet("Shrubs")
-biosheet("Stratum")
-biosheet("Tubus")
-biosheet("Tussocks")
+
+# biosheet("Cactoid")
+cactoida = "1FwxyURUKr6zLCmyqk0swrgim86O64YS2pvI-FyJFTP8"
+speciessheet("Cactoid", cactoida, "Cactoida Cortexum")
+speciessheet("Cactoid", cactoida, "Cactoida Lapis")
+speciessheet("Cactoid", cactoida, "Cactoida Vermis")
+speciessheet("Cactoid", cactoida, "Cactoida Pullulanta")
+speciessheet("Cactoid", cactoida, "Cactoida Peperatis")
+
+# biosheet("Clypeus")
+clypeus = "1-pH4f5-HMBD_8Ms4mGMIm2A-rz24xYU6AxxVqOVbo9E"
+speciessheet("Clypeus", clypeus, "Clypeus Lacrimam")
+speciessheet("Clypeus", clypeus, "Clypeus Margaritus")
+speciessheet("Clypeus", clypeus, "Clypeus Speculumi")
+
+
+# biosheet("Conchas")
+conchas = ""
+speciessheet("Conchas", conchas, "Concha Renibus")
+speciessheet("Conchas", conchas, "Concha Aureolas")
+speciessheet("Conchas", conchas, "Concha Labiata")
+speciessheet("Conchas", conchas, "Concha Biconcavis")
+
+# biosheet("Electricae")
+electricae = "1X6iuHW6TnPhuUWvP7gWLIDm-2HkL7utAAZUJI4tSMc8"
+speciessheet("Electricae", electricae, "Electricae Pluma")
+speciessheet("Electricae", electricae, "Electricae Radialem")
+
+# biosheet("Fonticulus")
+fonticulua = "1bt2hWhy2jB7oNptjBC72IpM1GhX4o_ULtfWQXSOU2yQ"
+for s in ["Fonticulua Segmentatus", "Fonticulua Campestris", "Fonticulua Upupam", "Fonticulua Lapida", "Fonticulua Fluctus", "Fonticulua Digitos"]:
+    speciessheet("Fonticulus", fonticulua, s)
+
+# biosheet("Fumerolas")
+fumerola = "1bhZ_wCJSWxbjnp1ZqPDsfYIrjCYwm0sKNIQ_o8fOXDU"
+for s in ["Fumerola Carbosis", "Fumerola Extremus", "Fumerola Nitris", "Fumerola Aquatis"]:
+    speciessheet("Fumerolas", fumerola, s)
+
+# biosheet("Fungoids")
+fungoid = "17e1fNOPNgW3xr7MXJ1BC6yA2dmnSq7wLpXcXpgrfATE"
+for s in ["Fungoida Setisis", "Fungoida Stabitis", "Fungoida Bullarum", "Fungoida Gelata"]:
+    speciessheet("Fungoids", fungoid, s)
+
+# biosheet("Osseus")
+osseus = "1Jm-1hvYkk-1r424W3qcFiOhLTpp31v2POdZudZjqPQk"
+for s in ["Osseus Fractus", "Osseus Discus", "Osseus Spiralis", "Osseus Pumice", "Osseus Cornibus", "Osseus Pellebantus"]:
+    speciessheet("Osseus", osseus, s)
+
+
+populate_species("Recepta", "1YoynwkCNq4AaFnnWhuN2-74aVjUTEX-hNFKyUIlZ0zc", [
+    "Recepta Umbrux",
+    "Recepta Deltahedronix",
+    "Recepta Conditivus"
+])
+
+populate_species("Shrubs", "15LhLCo1QnZi_4yggelsQ2hUOjxq9nFhxYf_gf1bzNoQ", [
+    "Frutexa Flabellum",
+    "Frutexa Acus",
+    "Frutexa Metallicum",
+    "Frutexa Flammasis",
+    "Frutexa Fera",
+    "Frutexa Sponsae",
+    "Frutexa Collum"
+])
+
+populate_species("Stratum", "1Q7-1gLfG62Q_zJji38eUIODU1OysXZdVofnYbRT81pc", [
+    "Stratum Excutitus",
+    "Stratum Paleas",
+    "Stratum Laminamus",
+    "Stratum Araneamus",
+    "Stratum Limaxus",
+    "Stratum Cucumisis",
+    "Stratum Tectonicas",
+    "Stratum Frigus"
+])
+
+biosheet("Tubus", "1-1-3Ht660Qp6pt1Mr79rLuIbi-zI0jhlV0xGvUfSwZ4", [
+    "Tubus Conifer",
+    "Tubus Sororibus",
+    "Tubus Cavas",
+    "Tubus Rosarium",
+    "Tubus Compagibus"
+])
+
+populate_species("Tussocks", "1XQ49_yf-S8I353-TE2vnxbzSs-RfB7M-4IaN_FWJ9mc", [
+    "Tussock Pennata",
+    "Tussock Ventusa",
+    "Tussock Ignis",
+    "Tussock Cultro",
+    "Tussock Catena",
+    "Tussock Pennatis",
+    "Tussock Serrati",
+    "Tussock Albata",
+    "Tussock Propagito",
+    "Tussock Divisa",
+    "Tussock Caputus",
+    "Tussock Triticum",
+    "Tussock Stigmasis",
+    "Tussock Virgam",
+    "Tussock Capillum"
+])
+
 thargsheet("Nonhuman Signatures")
 
 #all_bio = []
