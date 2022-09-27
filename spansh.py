@@ -844,10 +844,12 @@ def biosheet(type):
 
 
 def speciessheet(type, sheet, name):
+    print(f"speciessheet({type}, {sheet}, {name})")
     cells = []
     cells.append(HEADERS)
+
     for entry in classes.get(type):
-        if name in entry.get("english_name"):
+        if name in classes.get(type)[1]:
             cells.append(entry)
     try:
         write_sheet(sheet, f"{name}!A1:R", cells)
