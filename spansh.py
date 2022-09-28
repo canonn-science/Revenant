@@ -921,7 +921,7 @@ speciessheet("Clypeus", clypeus, "Clypeus Speculumi")
 
 
 # biosheet("Conchas")
-conchas = ""
+conchas = "1ZWr5gtyRzVcHua1edPPdAK-0biC00BmyXz1r9bkNiPc"
 speciessheet("Conchas", conchas, "Concha Renibus")
 speciessheet("Conchas", conchas, "Concha Aureolas")
 speciessheet("Conchas", conchas, "Concha Labiata")
@@ -980,7 +980,7 @@ populate_species("Stratum", "1Q7-1gLfG62Q_zJji38eUIODU1OysXZdVofnYbRT81pc", [
     "Stratum Frigus"
 ])
 
-biosheet("Tubus", "1-1-3Ht660Qp6pt1Mr79rLuIbi-zI0jhlV0xGvUfSwZ4", [
+populate_species("Tubus", "1-1-3Ht660Qp6pt1Mr79rLuIbi-zI0jhlV0xGvUfSwZ4", [
     "Tubus Conifer",
     "Tubus Sororibus",
     "Tubus Cavas",
