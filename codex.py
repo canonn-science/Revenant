@@ -325,15 +325,17 @@ SELECT DATA3.reward,DATA2.* FROM (
      ) DATA2   
      LEFT JOIN (
      SELECT 
-                distinct sub_species->"$.p[0]" as sub_species,reward
+                sub_species->"$.p[0]" as sub_species,reward
                 from (		 
                 select 
                 cnr.entryid,
-                cast(concat('{"p": ["',replace(english_name,' - ','","'),'"]}') as json) sub_species,reward,sub_class
+                cast(concat('{"p": ["',replace(english_name,' - ','","'),'"]}') as json) sub_species,max(reward) as reward,sub_class
             FROM organic_sales os
             LEFT JOIN codex_name_ref cnr ON cnr.name LIKE
             REPLACE(os.species,'_Name;','%%')
+            group by cast(concat('{"p": ["',replace(english_name,' - ','","'),'"]}') as json),sub_class,cnr.entryid
             ) data
+
      ) DATA3 ON DATA3.sub_species = DATA2.species 
      ORDER BY species_id asc
 	"""
@@ -375,6 +377,7 @@ SELECT DATA3.reward,DATA2.* FROM (
 
     return sheetdata
 
+
 def get_top_ten(species):
     cursor = mysql_conn.cursor(pymysql.cursors.DictCursor)
     sqltext = """
@@ -403,9 +406,9 @@ def get_top_ten(species):
         WHERE logged IS NOT null
         order by seconds ASC LIMIT 10    
     """
-    cursor.execute(sqltext, (species,species))
-    
-    sheetdata=[]
+    cursor.execute(sqltext, (species, species))
+
+    sheetdata = []
 
     while True:
         row = cursor.fetchone()
@@ -453,25 +456,34 @@ def get_leaders():
 
 
 capture_codex_ref()
-allscans = get_scan_speeds()
-challenge = get_challenge_scans()
-splits = get_challenge_splits()
-leaderboard = get_leaders()
+#allscans = get_scan_speeds()
+#challenge = get_challenge_scans()
+#splits = get_challenge_splits()
+#leaderboard = get_leaders()
 
-CHALLENGESHEET = "1Lpu3r2QCPa6BiSPGqCB7WS_QWghBQfVlfpgl92pXJSU"
-write_sheet(CHALLENGESHEET, f"Splits!A2:Z", splits)
-write_sheet(CHALLENGESHEET, f"Galactic Records!A2:B", allscans)
-write_sheet(CHALLENGESHEET, f"Best Times!A2:Z", challenge)
-write_sheet(CHALLENGESHEET, f"Leader Board!A2:Z", leaderboard)
-write_sheet(CHALLENGESHEET, f"Galactic Records!D3:G12", get_top_ten('$Codex_Ent_Aleoids_02_Name;'))
-write_sheet(CHALLENGESHEET, f"Galactic Records!D16:G25", get_top_ten('$Codex_Ent_Bacterial_01_Name;'))
-write_sheet(CHALLENGESHEET, f"Galactic Records!D29:G38", get_top_ten('$Codex_Ent_Cactoid_01_Name;'))
-write_sheet(CHALLENGESHEET, f"Galactic Records!D42:G51", get_top_ten('$Codex_Ent_Conchas_01_Name;'))
-write_sheet(CHALLENGESHEET, f"Galactic Records!D55:G64", get_top_ten('$Codex_Ent_Fungoids_02_Name;'))
-write_sheet(CHALLENGESHEET, f"Galactic Records!D68:G77", get_top_ten('$Codex_Ent_Osseus_01_Name;'))
-write_sheet(CHALLENGESHEET, f"Galactic Records!D81:G90", get_top_ten('$Codex_Ent_Shrubs_02_Name;'))
-write_sheet(CHALLENGESHEET, f"Galactic Records!D94:G103", get_top_ten('$Codex_Ent_Stratum_01_Name;'))
-write_sheet(CHALLENGESHEET, f"Galactic Records!D107:G116", get_top_ten('$Codex_Ent_Tussocks_11_Name;'))
+#CHALLENGESHEET = "1Lpu3r2QCPa6BiSPGqCB7WS_QWghBQfVlfpgl92pXJSU"
+#write_sheet(CHALLENGESHEET, f"Splits!A2:Z", splits)
+#write_sheet(CHALLENGESHEET, f"Galactic Records!A2:B", allscans)
+#write_sheet(CHALLENGESHEET, f"Best Times!A2:Z", challenge)
+#write_sheet(CHALLENGESHEET, f"Leader Board!A2:Z", leaderboard)
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D3:G12",
+#            get_top_ten('$Codex_Ent_Aleoids_02_Name;'))
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D16:G25",
+#            get_top_ten('$Codex_Ent_Bacterial_01_Name;'))
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D29:G38",
+#            get_top_ten('$Codex_Ent_Cactoid_01_Name;'))
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D42:G51",
+#            get_top_ten('$Codex_Ent_Conchas_01_Name;'))
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D55:G64",
+#            get_top_ten('$Codex_Ent_Fungoids_02_Name;'))
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D68:G77",
+#            get_top_ten('$Codex_Ent_Osseus_01_Name;'))
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D81:G90",
+#            get_top_ten('$Codex_Ent_Shrubs_02_Name;'))
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D94:G103",
+#            get_top_ten('$Codex_Ent_Stratum_01_Name;'))
+# write_sheet(CHALLENGESHEET, f"Galactic Records!D107:G116",
+#            get_top_ten('$Codex_Ent_Tussocks_11_Name;'))
 
 sheetdata = []
 sheetdata.append([
@@ -500,5 +512,5 @@ sheetdata.append([
 sheetdata.extend(get_codex_data())
 BIOSHEET = "15lqZtqJk7B2qUV5Jb4tlnst6i1B7pXlAUzQnacX64Kc"
 write_sheet(BIOSHEET, f"Odyssey Codex!A1:Z", sheetdata)
-
+print("getting region data", flush=True)
 write_sheet(BIOSHEET, f"Regions!A1:ZZ", get_region_matrix())
