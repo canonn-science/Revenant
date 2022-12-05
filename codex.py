@@ -325,7 +325,7 @@ SELECT DATA3.reward,DATA2.* FROM (
      ) DATA2   
      LEFT JOIN (
      SELECT 
-                sub_species->"$.p[0]" as sub_species,reward
+                sub_species->"$.p[0]" as sub_species,max(reward) as reward
                 from (		 
                 select 
                 cnr.entryid,
@@ -335,6 +335,7 @@ SELECT DATA3.reward,DATA2.* FROM (
             REPLACE(os.species,'_Name;','%%')
             group by cast(concat('{"p": ["',replace(english_name,' - ','","'),'"]}') as json),sub_class,cnr.entryid
             ) data
+            group by sub_species->"$.p[0]"
 
      ) DATA3 ON DATA3.sub_species = DATA2.species 
      ORDER BY species_id asc
