@@ -329,7 +329,7 @@ SELECT DATA3.reward,DATA2.* FROM (
                 from (		 
                 select 
                 cnr.entryid,
-                cast(concat('{"p": ["',replace(english_name,' - ','","'),'"]}') as json) sub_species,max(reward) as reward,sub_class
+                cast(concat('{"p": ["',replace(english_name,' - ','","'),'"]}') as json) sub_species,SUBSTRING_INDEX( GROUP_CONCAT(reward ORDER BY os.created_at DESC), ',', 1) as reward,sub_class
             FROM organic_sales os
             LEFT JOIN codex_name_ref cnr ON cnr.name LIKE
             REPLACE(os.species,'_Name;','%%')
