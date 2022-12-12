@@ -61,6 +61,7 @@ def capture_codex_ref():
                 select replace(replace(name,'$Codex_Ent_',''),'_Name;','') as name,english_name ,
                 cast(concat('{"species": "',replace(english_name,' - ','","colour": "'),'"}') as json) as english_split
                 from codex_name_ref where platform = 'odyssey'
+                and hud_category = 'Biology'
                 order by 1
                 ) data2
                 )
@@ -325,7 +326,7 @@ SELECT DATA3.reward,DATA2.* FROM (
      ) DATA2   
      LEFT JOIN (
      SELECT 
-                sub_species->"$.p[0]" as sub_species,max(reward) as reward
+                sub_species->"$.p[0]" as sub_species,max(cast(reward as SIGNED)) as reward
                 from (		 
                 select 
                 cnr.entryid,
